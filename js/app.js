@@ -1,18 +1,20 @@
 /**
- * Casino Application Orchestrator
- * Connects Slot Engine, UI DOM, Audio Synth, Particles & Celebrations.
+ * Casino Application Orchestrator (Classic 3-Reel Edition)
+ * Connects Slot Engine, UI DOM, Audio Synth, Particles, Celebrations & Share Card.
  */
 
 class CasinoApp {
     constructor() {
         this.balance = parseFloat(localStorage.getItem('casino_balance')) || 10000;
-        this.bets = [10, 20, 40, 60, 100, 200, 500, 1000, 2000];
-        this.betIndex = 1; // Default $20
+        this.bets = [5, 10, 25, 50, 100, 250, 500, 1000, 2500];
+        this.betIndex = 2; // Default $25 (5 lines x $5)
         this.isSpinning = false;
         this.isTurbo = false;
         this.isAutoSpinning = false;
         this.freeSpinsRemaining = 0;
         this.freeSpinsMultiplier = 3;
+        this.numReels = 3;
+        this.numRows = 3;
 
         // Jackpots
         this.jackpotMini = 1250.00;
@@ -36,6 +38,7 @@ class CasinoApp {
             paytableBtn: document.getElementById('paytableBtn'),
             closePaytableBtn: document.getElementById('closePaytableBtn'),
             paytableModal: document.getElementById('paytableModal'),
+            shareBtn: document.getElementById('shareBtn'),
             atmBtn: document.getElementById('atmBtn'),
             closeAtmBtn: document.getElementById('closeAtmBtn'),
             atmModal: document.getElementById('atmModal'),
@@ -48,7 +51,7 @@ class CasinoApp {
             reelsGrid: document.getElementById('reelsGrid')
         };
 
-        // Current 5x3 visible grid of symbols
+        // Current 3x3 visible grid of symbols
         this.currentGrid = [];
 
         this.init();
@@ -70,8 +73,12 @@ class CasinoApp {
     }
 
     updateDisplays() {
-        this.dom.balance.textContent = this.formatCurrency(this.balance);
-        this.dom.bet.textContent = this.formatCurrency(this.getCurrentBet());
+        if (this.dom.balance) {
+            this.dom.balance.textContent = this.formatCurrency(this.balance);
+        }
+        if (this.dom.bet) {
+            this.dom.bet.textContent = this.formatCurrency(this.getCurrentBet());
+        }
         localStorage.setItem('casino_balance', this.balance.toFixed(2));
     }
 
@@ -81,11 +88,12 @@ class CasinoApp {
 
     setupInitialReels() {
         this.currentGrid = [];
-        for (let col = 0; col < 5; col++) {
+        for (let col = 0; col < this.numReels; col++) {
             const strip = document.getElementById(`reelStrip-${col}`);
+            if (!strip) continue;
             strip.innerHTML = '';
             const colSymbols = [];
-            for (let row = 0; row < 3; row++) {
+            for (let row = 0; row < this.numRows; row++) {
                 const sym = window.slotEngine.getRandomSymbol();
                 colSymbols.push(sym);
                 const symEl = this.createSymbolElement(sym, col, row);
@@ -118,9 +126,14 @@ class CasinoApp {
 
     bindEvents() {
         // Spin Button
-        this.dom.spinBtn.addEventListener('click', () => this.handleSpinRequest());
+        if (this.dom.spinBtn) {
+            this.dom.spinBtn.addEventListener('click', () => {
+                this.dom.spinBtn.blur();
+                this.handleSpinRequest();
+            });
+        }
 
-        // Lever Pull
+        // Mechanical Lever Pull
         if (this.dom.lever) {
             this.dom.lever.addEventListener('click', () => {
                 this.pullLeverAnimation();
@@ -130,75 +143,110 @@ class CasinoApp {
 
         // Keyboard Shortcut: Spacebar
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && !e.repeat && document.activeElement.tagName !== 'BUTTON') {
+            if (e.code === 'Space') {
                 e.preventDefault();
+                // If celebration modal is open, dismiss it
+                if (window.celebrations && window.celebrations.overlay && !window.celebrations.overlay.classList.contains('hidden')) {
+                    window.celebrations.dismiss();
+                    return;
+                }
                 this.handleSpinRequest();
             }
         });
 
         // Bet adjustments
-        this.dom.betUpBtn.addEventListener('click', () => {
-            window.casinoAudio.playButtonClick();
-            if (this.betIndex < this.bets.length - 1) {
-                this.betIndex++;
-                this.updateDisplays();
-            }
-        });
+        if (this.dom.betUpBtn) {
+            this.dom.betUpBtn.addEventListener('click', () => {
+                window.casinoAudio.playButtonClick();
+                if (this.betIndex < this.bets.length - 1) {
+                    this.betIndex++;
+                    this.updateDisplays();
+                }
+            });
+        }
 
-        this.dom.betDownBtn.addEventListener('click', () => {
-            window.casinoAudio.playButtonClick();
-            if (this.betIndex > 0) {
-                this.betIndex--;
-                this.updateDisplays();
-            }
-        });
+        if (this.dom.betDownBtn) {
+            this.dom.betDownBtn.addEventListener('click', () => {
+                window.casinoAudio.playButtonClick();
+                if (this.betIndex > 0) {
+                    this.betIndex--;
+                    this.updateDisplays();
+                }
+            });
+        }
 
-        this.dom.maxBetBtn.addEventListener('click', () => {
-            window.casinoAudio.playButtonClick();
-            this.betIndex = this.bets.length - 1;
-            this.updateDisplays();
-        });
+        if (this.dom.maxBetBtn) {
+            this.dom.maxBetBtn.addEventListener('click', () => {
+                window.casinoAudio.playButtonClick();
+                this.betIndex = this.bets.length - 1;
+                this.updateDisplays();
+            });
+        }
 
         // Turbo toggle
-        this.dom.turboBtn.addEventListener('click', () => {
-            window.casinoAudio.playButtonClick();
-            this.isTurbo = !this.isTurbo;
-            this.dom.turboBtn.classList.toggle('active', this.isTurbo);
-        });
+        if (this.dom.turboBtn) {
+            this.dom.turboBtn.addEventListener('click', () => {
+                window.casinoAudio.playButtonClick();
+                this.isTurbo = !this.isTurbo;
+                this.dom.turboBtn.classList.toggle('active', this.isTurbo);
+            });
+        }
 
         // Auto-spin toggle
-        this.dom.autoSpinBtn.addEventListener('click', () => {
-            window.casinoAudio.playButtonClick();
-            this.isAutoSpinning = !this.isAutoSpinning;
-            this.dom.autoSpinBtn.classList.toggle('active', this.isAutoSpinning);
-            if (this.isAutoSpinning && !this.isSpinning) {
-                this.handleSpinRequest();
-            }
-        });
+        if (this.dom.autoSpinBtn) {
+            this.dom.autoSpinBtn.addEventListener('click', () => {
+                window.casinoAudio.playButtonClick();
+                this.isAutoSpinning = !this.isAutoSpinning;
+                this.dom.autoSpinBtn.classList.toggle('active', this.isAutoSpinning);
+                if (this.isAutoSpinning && !this.isSpinning) {
+                    this.handleSpinRequest();
+                }
+            });
+        }
 
         // Sound toggle
-        this.dom.soundBtn.addEventListener('click', () => {
-            const isMuted = window.casinoAudio.toggleMute();
-            this.updateSoundIcon(isMuted);
-        });
+        if (this.dom.soundBtn) {
+            this.dom.soundBtn.addEventListener('click', () => {
+                const isMuted = window.casinoAudio.toggleMute();
+                this.updateSoundIcon(isMuted);
+            });
+        }
+
+        // Share Card Modal Open
+        if (this.dom.shareBtn) {
+            this.dom.shareBtn.addEventListener('click', () => {
+                window.casinoAudio.playButtonClick();
+                if (window.shareCard) {
+                    window.shareCard.openWithCurrentState();
+                }
+            });
+        }
 
         // Paytable Modal
-        this.dom.paytableBtn.addEventListener('click', () => {
-            window.casinoAudio.playButtonClick();
-            this.dom.paytableModal.classList.remove('hidden');
-        });
-        this.dom.closePaytableBtn.addEventListener('click', () => {
-            this.dom.paytableModal.classList.add('hidden');
-        });
+        if (this.dom.paytableBtn) {
+            this.dom.paytableBtn.addEventListener('click', () => {
+                window.casinoAudio.playButtonClick();
+                this.dom.paytableModal.classList.remove('hidden');
+            });
+        }
+        if (this.dom.closePaytableBtn) {
+            this.dom.closePaytableBtn.addEventListener('click', () => {
+                this.dom.paytableModal.classList.add('hidden');
+            });
+        }
 
         // ATM Modal
-        this.dom.atmBtn.addEventListener('click', () => {
-            window.casinoAudio.playButtonClick();
-            this.dom.atmModal.classList.remove('hidden');
-        });
-        this.dom.closeAtmBtn.addEventListener('click', () => {
-            this.dom.atmModal.classList.add('hidden');
-        });
+        if (this.dom.atmBtn) {
+            this.dom.atmBtn.addEventListener('click', () => {
+                window.casinoAudio.playButtonClick();
+                this.dom.atmModal.classList.remove('hidden');
+            });
+        }
+        if (this.dom.closeAtmBtn) {
+            this.dom.closeAtmBtn.addEventListener('click', () => {
+                this.dom.atmModal.classList.add('hidden');
+            });
+        }
 
         // ATM claim buttons
         const claimBtns = document.querySelectorAll('.atm-claim-btn');
@@ -215,7 +263,9 @@ class CasinoApp {
     }
 
     updateSoundIcon(isMuted = window.casinoAudio.isMuted) {
-        this.dom.soundIcon.textContent = isMuted ? '🔇' : '🔊';
+        if (this.dom.soundIcon) {
+            this.dom.soundIcon.textContent = isMuted ? '🔇' : '🔊';
+        }
     }
 
     pullLeverAnimation() {
@@ -232,14 +282,16 @@ class CasinoApp {
             this.jackpotMajor += (Math.random() * 0.25);
             this.jackpotGrand += (Math.random() * 0.95);
 
-            this.dom.jpMini.textContent = this.formatCurrency(this.jackpotMini);
-            this.dom.jpMajor.textContent = this.formatCurrency(this.jackpotMajor);
-            this.dom.jpGrand.textContent = this.formatCurrency(this.jackpotGrand);
+            if (this.dom.jpMini) this.dom.jpMini.textContent = this.formatCurrency(this.jackpotMini);
+            if (this.dom.jpMajor) this.dom.jpMajor.textContent = this.formatCurrency(this.jackpotMajor);
+            if (this.dom.jpGrand) this.dom.jpGrand.textContent = this.formatCurrency(this.jackpotGrand);
         }, 3000);
     }
 
     clearPaylines() {
-        this.dom.paylinesSvg.innerHTML = '';
+        if (this.dom.paylinesSvg) {
+            this.dom.paylinesSvg.innerHTML = '';
+        }
         const winningElements = document.querySelectorAll('.symbol-winning');
         winningElements.forEach(el => el.classList.remove('symbol-winning'));
         const columns = document.querySelectorAll('.reel-column');
@@ -247,6 +299,11 @@ class CasinoApp {
     }
 
     handleSpinRequest() {
+        // If celebration overlay is active, dismiss it first
+        if (window.celebrations && window.celebrations.overlay && !window.celebrations.overlay.classList.contains('hidden')) {
+            window.celebrations.dismiss();
+        }
+
         if (this.isSpinning) return;
 
         const currentBet = this.getCurrentBet();
@@ -254,8 +311,8 @@ class CasinoApp {
 
         if (!isFree && this.balance < currentBet) {
             this.isAutoSpinning = false;
-            this.dom.autoSpinBtn.classList.remove('active');
-            this.dom.atmModal.classList.remove('hidden');
+            if (this.dom.autoSpinBtn) this.dom.autoSpinBtn.classList.remove('active');
+            if (this.dom.atmModal) this.dom.atmModal.classList.remove('hidden');
             return;
         }
 
@@ -264,86 +321,98 @@ class CasinoApp {
 
     async executeSpin() {
         this.isSpinning = true;
-        this.dom.spinBtn.disabled = true;
-        this.dom.spinBtn.classList.add('spinning');
+        if (this.dom.spinBtn) {
+            this.dom.spinBtn.disabled = true;
+            this.dom.spinBtn.classList.add('spinning');
+        }
         this.clearPaylines();
 
         const currentBet = this.getCurrentBet();
         const isFree = this.freeSpinsRemaining > 0;
 
-        if (isFree) {
-            this.freeSpinsRemaining--;
-            this.dom.fsLeftCount.textContent = this.freeSpinsRemaining;
-            if (this.freeSpinsRemaining === 0) {
-                setTimeout(() => {
-                    this.dom.freeSpinsBanner.classList.add('hidden');
-                }, 2000);
-            }
-        } else {
-            this.balance -= currentBet;
-            this.updateDisplays();
-        }
-
-        window.casinoAudio.playSpinStart();
-
-        // Generate target outcome
-        const outcomeGrid = window.slotEngine.generateSpinOutcome();
-
-        // Animate reels spinning
-        await this.animateReels(outcomeGrid);
-
-        this.currentGrid = outcomeGrid;
-
-        // Evaluate results
-        const result = window.slotEngine.evaluateSpin(outcomeGrid, currentBet, isFree);
-
-        await this.handleSpinResult(result);
-
-        this.isSpinning = false;
-        this.dom.spinBtn.disabled = false;
-        this.dom.spinBtn.classList.remove('spinning');
-
-        // Auto-spin loop
-        if (this.isAutoSpinning) {
-            if (this.balance >= this.getCurrentBet() || this.freeSpinsRemaining > 0) {
-                setTimeout(() => {
-                    if (this.isAutoSpinning) {
-                        this.handleSpinRequest();
-                    }
-                }, this.isTurbo ? 350 : 700);
+        try {
+            if (isFree) {
+                this.freeSpinsRemaining--;
+                if (this.dom.fsLeftCount) this.dom.fsLeftCount.textContent = this.freeSpinsRemaining;
+                if (this.freeSpinsRemaining === 0) {
+                    setTimeout(() => {
+                        if (this.dom.freeSpinsBanner) this.dom.freeSpinsBanner.classList.add('hidden');
+                    }, 2000);
+                }
             } else {
-                this.isAutoSpinning = false;
-                this.dom.autoSpinBtn.classList.remove('active');
-                this.dom.atmModal.classList.remove('hidden');
+                this.balance -= currentBet;
+                this.updateDisplays();
+            }
+
+            window.casinoAudio.playSpinStart();
+
+            // Generate target 3x3 outcome
+            const outcomeGrid = window.slotEngine.generateSpinOutcome();
+
+            // Animate reels spinning
+            await this.animateReels(outcomeGrid);
+
+            this.currentGrid = outcomeGrid;
+
+            // Evaluate results
+            const result = window.slotEngine.evaluateSpin(outcomeGrid, currentBet, isFree);
+
+            await this.handleSpinResult(result);
+        } catch (err) {
+            console.error('Spin error occurred:', err);
+        } finally {
+            // Guaranteed state reset
+            this.isSpinning = false;
+            if (this.dom.spinBtn) {
+                this.dom.spinBtn.disabled = false;
+                this.dom.spinBtn.classList.remove('spinning');
+            }
+
+            // Auto-spin loop
+            if (this.isAutoSpinning) {
+                if (this.balance >= this.getCurrentBet() || this.freeSpinsRemaining > 0) {
+                    setTimeout(() => {
+                        if (this.isAutoSpinning && !this.isSpinning) {
+                            this.handleSpinRequest();
+                        }
+                    }, this.isTurbo ? 300 : 600);
+                } else {
+                    this.isAutoSpinning = false;
+                    if (this.dom.autoSpinBtn) this.dom.autoSpinBtn.classList.remove('active');
+                    if (this.dom.atmModal) this.dom.atmModal.classList.remove('hidden');
+                }
             }
         }
     }
 
     animateReels(outcomeGrid) {
         return new Promise((resolve) => {
-            const numReels = 5;
+            const numReels = this.numReels;
             let reelsFinished = 0;
             let scatterFoundCount = 0;
 
-            const baseSpinDuration = this.isTurbo ? 400 : 1000;
-            const reelStaggerDelay = this.isTurbo ? 100 : 250;
+            const baseSpinDuration = this.isTurbo ? 350 : 800;
+            const reelStaggerDelay = this.isTurbo ? 100 : 220;
 
             for (let col = 0; col < numReels; col++) {
                 const strip = document.getElementById(`reelStrip-${col}`);
-                const reelCol = strip.parentElement;
+                if (!strip) {
+                    reelsFinished++;
+                    if (reelsFinished === numReels) resolve();
+                    continue;
+                }
 
-                // Build animation strip
-                const spinSymbolCount = this.isTurbo ? 12 : 22 + col * 4;
+                // Build animation strip with buffer symbols
+                const spinSymbolCount = this.isTurbo ? 10 : 18 + col * 4;
                 const fragment = document.createDocumentFragment();
 
-                // Generate random buffer symbols for blur spin
                 for (let i = 0; i < spinSymbolCount; i++) {
                     const sym = window.slotEngine.getRandomSymbol();
                     fragment.appendChild(this.createSymbolElement(sym, col, -1));
                 }
 
-                // Append the 3 target final symbols
-                for (let row = 0; row < 3; row++) {
+                // Target 3 symbols
+                for (let row = 0; row < this.numRows; row++) {
                     const targetSym = outcomeGrid[col][row];
                     fragment.appendChild(this.createSymbolElement(targetSym, col, row));
                 }
@@ -351,50 +420,46 @@ class CasinoApp {
                 strip.innerHTML = '';
                 strip.appendChild(fragment);
 
-                const symbolHeight = strip.children[0].offsetHeight || 120;
+                const symbolHeight = (strip.children[0] && strip.children[0].offsetHeight) ? strip.children[0].offsetHeight : 130;
                 const totalDistance = spinSymbolCount * symbolHeight;
 
                 const colDelay = col * reelStaggerDelay;
                 const duration = baseSpinDuration + colDelay;
 
-                // Animate reel with CSS translation
+                // Animate reel downwards
                 strip.style.transition = 'none';
                 strip.style.transform = 'translateY(0px)';
-                strip.offsetHeight; // Force reflow
+                void strip.offsetHeight; // Force reflow
 
-                // Start transition
-                strip.style.transition = `transform ${duration}ms cubic-bezier(0.1, 0.9, 0.2, 1.05)`;
+                strip.style.transition = `transform ${duration}ms cubic-bezier(0.12, 0.85, 0.25, 1.02)`;
                 strip.style.transform = `translateY(-${totalDistance}px)`;
 
-                // Schedule reel completion
                 setTimeout(() => {
                     strip.style.transition = 'none';
 
-                    // Re-render only final 3 symbols in position
+                    // Re-render target 3 symbols in resting position
                     strip.innerHTML = '';
-                    for (let row = 0; row < 3; row++) {
+                    for (let row = 0; row < this.numRows; row++) {
                         const targetSym = outcomeGrid[col][row];
                         strip.appendChild(this.createSymbolElement(targetSym, col, row));
                     }
                     strip.style.transform = 'translateY(0px)';
 
-                    // Reel stop sound
+                    // Reel stop audio
                     window.casinoAudio.playReelStop(col);
 
-                    // Check for Scatters landed on this reel
-                    let reelHasScatter = false;
-                    for (let row = 0; row < 3; row++) {
+                    // Check Scatters on this reel
+                    for (let row = 0; row < this.numRows; row++) {
                         if (outcomeGrid[col][row].isScatter) {
                             scatterFoundCount++;
-                            reelHasScatter = true;
                             window.casinoAudio.playScatterHit(scatterFoundCount);
                             break;
                         }
                     }
 
-                    // Check near-miss anticipation for subsequent reels
-                    if (scatterFoundCount >= 2 && col < 4) {
-                        const nextCol = document.querySelector(`.reel-column[data-reel="${col + 1}"]`);
+                    // Near-miss anticipation on 3rd reel if first 2 had scatter
+                    if (scatterFoundCount >= 2 && col === 1) {
+                        const nextCol = document.querySelector(`.reel-column[data-reel="2"]`);
                         if (nextCol) nextCol.classList.add('anticipation-glow');
                         window.casinoAudio.startAnticipation();
                     }
@@ -411,7 +476,7 @@ class CasinoApp {
 
     async handleSpinResult(result) {
         if (result.totalWin > 0) {
-            this.dom.winDisplay.textContent = this.formatCurrency(result.totalWin);
+            if (this.dom.win) this.dom.win.textContent = this.formatCurrency(result.totalWin);
             this.balance += result.totalWin;
             this.updateDisplays();
 
@@ -424,14 +489,14 @@ class CasinoApp {
             // Trigger Celebration
             await window.celebrations.celebrate(result.celebrationTier, result.totalWin);
         } else {
-            this.dom.winDisplay.textContent = '$0.00';
+            if (this.dom.win) this.dom.win.textContent = '$0.00';
         }
 
         // Free Spins triggered
         if (result.freeSpinsAwarded > 0) {
             this.freeSpinsRemaining += result.freeSpinsAwarded;
-            this.dom.fsLeftCount.textContent = this.freeSpinsRemaining;
-            this.dom.freeSpinsBanner.classList.remove('hidden');
+            if (this.dom.fsLeftCount) this.dom.fsLeftCount.textContent = this.freeSpinsRemaining;
+            if (this.dom.freeSpinsBanner) this.dom.freeSpinsBanner.classList.remove('hidden');
             window.casinoAudio.playFreeSpinsTrigger();
             window.particleEngine.burstFireworks(100);
             window.celebrations.applyShake('big', 1000);
@@ -451,10 +516,11 @@ class CasinoApp {
 
     drawPaylines(winningLines) {
         const svg = this.dom.paylinesSvg;
+        if (!svg) return;
         svg.innerHTML = '';
         if (!winningLines || winningLines.length === 0) return;
 
-        const colors = ['#00f0ff', '#ff007f', '#ffd700', '#00ff88', '#9d00ff', '#ff5500'];
+        const colors = ['#00f0ff', '#ff007f', '#ffd700', '#00ff88', '#9d00ff'];
         const frameRect = svg.getBoundingClientRect();
 
         winningLines.forEach((line, idx) => {

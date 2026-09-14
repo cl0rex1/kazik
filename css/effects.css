@@ -250,6 +250,33 @@ body.shake-godlike {
     box-shadow: 0 0 50px rgba(255, 215, 0, 1), 0 12px 25px rgba(0, 0, 0, 0.6);
 }
 
+.celebration-actions {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.celebration-share-btn {
+    background: linear-gradient(135deg, #00f0ff 0%, #0077ff 100%);
+    color: #000;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 900;
+    padding: 16px 28px;
+    border-radius: 40px;
+    border: 2.5px solid #fff;
+    cursor: pointer;
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.7);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.celebration-share-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 40px rgba(0, 240, 255, 1);
+}
+
 @media (max-width: 768px) {
     .celebration-badge {
         font-size: 2rem;

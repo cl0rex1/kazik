@@ -14,19 +14,22 @@ class CelebrationsOrchestrator {
 
         this.currentCounterAnim = null;
         this.currentResolve = null;
+        this.autoDismissTimer = null;
 
         if (this.collectBtn) {
-            this.collectBtn.addEventListener('click', () => this.dismiss());
+            this.collectBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.dismiss();
+            });
         }
         if (this.overlay) {
-            this.overlay.addEventListener('click', (e) => {
-                if (e.target === this.overlay) this.dismiss();
-            });
+            // Clicking anywhere on overlay or backdrop dismisses celebration
+            this.overlay.addEventListener('click', () => this.dismiss());
         }
     }
 
     applyShake(type = 'mild', durationMs = 600) {
-        document.body.classList.remove('shake-mild', 'shake-big', 'shake-mega', 'shake-godlike');
+        this.clearShake();
         const className = `shake-${type}`;
         document.body.classList.add(className);
 
@@ -48,7 +51,7 @@ class CelebrationsOrchestrator {
             this.screenFx.classList.add('strobe-flash');
             setTimeout(() => {
                 this.screenFx.classList.remove('strobe-flash');
-            }, 1200);
+            }, 1000);
         } else if (type === 'godlike') {
             this.screenFx.classList.add('strobe-flash', 'godlike-laser');
         }
@@ -67,7 +70,7 @@ class CelebrationsOrchestrator {
         });
     }
 
-    animateCounter(targetAmount, durationMs = 2000, onTick = null) {
+    animateCounter(targetAmount, durationMs = 1500) {
         return new Promise((resolve) => {
             const startTime = performance.now();
             const startVal = 0;
@@ -75,22 +78,23 @@ class CelebrationsOrchestrator {
             const step = (now) => {
                 const elapsed = now - startTime;
                 const progress = Math.min(elapsed / durationMs, 1);
-                // Ease out expo
                 const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
                 const current = startVal + (targetAmount - startVal) * ease;
 
-                this.counter.textContent = this.formatCurrency(current);
-
-                if (Math.random() < 0.4) {
-                    window.casinoAudio.playCoinTally();
+                if (this.counter) {
+                    this.counter.textContent = this.formatCurrency(current);
                 }
 
-                if (onTick) onTick(current);
+                if (Math.random() < 0.35) {
+                    window.casinoAudio.playCoinTally();
+                }
 
                 if (progress < 1) {
                     this.currentCounterAnim = requestAnimationFrame(step);
                 } else {
-                    this.counter.textContent = this.formatCurrency(targetAmount);
+                    if (this.counter) {
+                        this.counter.textContent = this.formatCurrency(targetAmount);
+                    }
                     resolve();
                 }
             };
@@ -104,62 +108,83 @@ class CelebrationsOrchestrator {
             this.currentResolve = resolve;
 
             if (tier === 'nice') {
-                // Inline reel celebration, no modal popup to keep flow fast
                 this.applyShake('mild', 400);
                 window.casinoAudio.playWinFanfare('nice');
                 window.particleEngine.burstCoins(25);
-                setTimeout(resolve, 1400);
+                setTimeout(() => {
+                    this.dismiss();
+                }, 1000);
                 return;
             }
 
             // Big, Mega, or Godlike: Show Fullscreen Celebration Overlay
-            this.overlay.classList.remove('hidden');
-            this.tierBadge.className = 'celebration-badge';
+            if (this.overlay) {
+                this.overlay.classList.remove('hidden');
+            }
+            if (this.tierBadge) {
+                this.tierBadge.className = 'celebration-badge';
+            }
 
-            let duration = 2400;
+            let counterDuration = 1600;
+            let autoDismissAfter = 4000;
 
             if (tier === 'big') {
-                this.tierBadge.textContent = 'БОЛЬШОЙ КУШ!';
-                this.tierBadge.classList.add('tier-big');
-                this.subText.textContent = 'ОТЛИЧНЫЙ ЗАНОС!';
-                this.applyShake('big', 1000);
+                if (this.tierBadge) {
+                    this.tierBadge.textContent = 'БОЛЬШОЙ КУШ!';
+                    this.tierBadge.classList.add('tier-big');
+                }
+                if (this.subText) this.subText.textContent = 'ОТЛИЧНЫЙ ЗАНОС!';
+                this.applyShake('big', 800);
                 this.triggerStrobe('flash');
                 window.casinoAudio.playWinFanfare('big');
-                window.particleEngine.burstCoins(70);
-                window.particleEngine.burstConfetti(120);
-                duration = 2000;
+                window.particleEngine.burstCoins(60);
+                window.particleEngine.burstConfetti(100);
+                counterDuration = 1400;
+                autoDismissAfter = 3200;
             } else if (tier === 'mega') {
-                this.tierBadge.textContent = '⚡ МЕГА ВЫИГРЫШ! ⚡';
-                this.tierBadge.classList.add('tier-mega');
-                this.subText.textContent = 'БАНК ВЗОРВАН!';
-                this.applyShake('mega', 1500);
+                if (this.tierBadge) {
+                    this.tierBadge.textContent = '⚡ МЕГА ВЫИГРЫШ! ⚡';
+                    this.tierBadge.classList.add('tier-mega');
+                }
+                if (this.subText) this.subText.textContent = 'БАНК ВЗОРВАН!';
+                this.applyShake('mega', 1200);
                 this.triggerStrobe('flash');
                 window.casinoAudio.playWinFanfare('mega');
-                window.particleEngine.burstCoins(120);
-                window.particleEngine.burstConfetti(220);
-                window.particleEngine.burstFireworks(60);
-                duration = 2600;
+                window.particleEngine.burstCoins(100);
+                window.particleEngine.burstConfetti(180);
+                window.particleEngine.burstFireworks(50);
+                counterDuration = 1800;
+                autoDismissAfter = 4000;
             } else if (tier === 'godlike') {
-                this.tierBadge.textContent = '👑 ДЖЕКПОТ БОГОВ! 👑';
-                this.tierBadge.classList.add('tier-godlike');
-                this.subText.textContent = 'АБСОЛЮТНЫЙ РЕКОРД КАЗИНО!';
+                if (this.tierBadge) {
+                    this.tierBadge.textContent = '👑 ДЖЕКПОТ БОГОВ! 👑';
+                    this.tierBadge.classList.add('tier-godlike');
+                }
+                if (this.subText) this.subText.textContent = 'АБСОЛЮТНЫЙ РЕКОРД КАЗИНО!';
                 this.applyShake('godlike', 0);
                 this.triggerStrobe('godlike');
                 window.casinoAudio.playWinFanfare('godlike');
                 window.particleEngine.startJackpotStorm();
-                duration = 3200;
+                counterDuration = 2200;
+                autoDismissAfter = 5000;
             }
 
-            this.animateCounter(winAmount, duration).then(() => {
-                // If auto-spin is on, auto dismiss after 1.5s
-                if (window.app && window.app.isAutoSpinning) {
-                    setTimeout(() => this.dismiss(), 1500);
-                }
-            });
+            this.animateCounter(winAmount, counterDuration);
+
+            // Guaranteed auto-dismiss safety timer
+            if (this.autoDismissTimer) clearTimeout(this.autoDismissTimer);
+            this.autoDismissTimer = setTimeout(() => {
+                this.dismiss();
+            }, autoDismissAfter);
         });
     }
 
     dismiss() {
+        if (this.autoDismissTimer) {
+            clearTimeout(this.autoDismissTimer);
+            this.autoDismissTimer = null;
+        }
+
         if (this.currentCounterAnim) {
             cancelAnimationFrame(this.currentCounterAnim);
             this.currentCounterAnim = null;
