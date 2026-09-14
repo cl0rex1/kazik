@@ -1,0 +1,267 @@
+/* Screen Shake Effects */
+body.shake-mild {
+    animation: screenShakeMild 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+body.shake-big {
+    animation: screenShakeBig 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+body.shake-mega {
+    animation: screenShakeMega 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+body.shake-godlike {
+    animation: screenShakeGodlike 1.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+}
+
+@keyframes screenShakeMild {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-2px, 0, 0); }
+    40%, 60% { transform: translate3d(2px, 0, 0); }
+}
+
+@keyframes screenShakeBig {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    15% { transform: translate(-4px, 3px) rotate(-0.5deg); }
+    30% { transform: translate(4px, -3px) rotate(0.5deg); }
+    45% { transform: translate(-5px, -2px) rotate(-0.5deg); }
+    60% { transform: translate(5px, 2px) rotate(0.5deg); }
+    75% { transform: translate(-3px, 1px) rotate(-0.2deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes screenShakeMega {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-8px, -6px) rotate(-1deg); }
+    20% { transform: translate(8px, 6px) rotate(1deg); }
+    30% { transform: translate(-10px, 5px) rotate(-1.5deg); }
+    40% { transform: translate(10px, -5px) rotate(1.5deg); }
+    50% { transform: translate(-8px, -7px) rotate(-1deg); }
+    60% { transform: translate(8px, 7px) rotate(1deg); }
+    70% { transform: translate(-5px, 4px) rotate(-0.5deg); }
+    80% { transform: translate(5px, -4px) rotate(0.5deg); }
+    90% { transform: translate(-2px, 1px) rotate(-0.2deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes screenShakeGodlike {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    10% { transform: translate(-12px, -8px) scale(1.02) rotate(-1.5deg); }
+    20% { transform: translate(12px, 8px) scale(0.99) rotate(1.5deg); }
+    30% { transform: translate(-15px, 10px) scale(1.03) rotate(-2deg); }
+    40% { transform: translate(15px, -10px) scale(0.98) rotate(2deg); }
+    50% { transform: translate(-12px, -12px) scale(1.02) rotate(-1.5deg); }
+    60% { transform: translate(12px, 12px) scale(1) rotate(1.5deg); }
+    70% { transform: translate(-8px, 6px) scale(1.01) rotate(-1deg); }
+    80% { transform: translate(8px, -6px) scale(0.99) rotate(1deg); }
+    100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+}
+
+/* Screen FX Strobe Flash Layer */
+.screen-fx-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 90;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+
+.screen-fx-overlay.strobe-flash {
+    animation: strobeAnimation 0.3s steps(2, start) 4;
+}
+
+.screen-fx-overlay.godlike-laser {
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, rgba(255, 0, 127, 0.3) 40%, rgba(0, 240, 255, 0.2) 70%, transparent 100%);
+    animation: laserPulse 0.4s infinite alternate;
+}
+
+@keyframes strobeAnimation {
+    0% { background: rgba(255, 255, 255, 0.85); opacity: 1; }
+    50% { background: rgba(255, 0, 127, 0.6); opacity: 0.8; }
+    100% { background: transparent; opacity: 0; }
+}
+
+@keyframes laserPulse {
+    0% { opacity: 0.4; filter: hue-rotate(0deg) saturate(2); }
+    100% { opacity: 0.9; filter: hue-rotate(360deg) saturate(4); }
+}
+
+/* Celebration Overlay */
+.celebration-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.celebration-overlay.hidden {
+    display: none !important;
+    opacity: 0;
+}
+
+.celebration-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 3, 12, 0.85);
+    backdrop-filter: blur(10px);
+}
+
+.celebration-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 30px;
+    animation: celebrationPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes celebrationPop {
+    0% { transform: scale(0.2) rotate(-5deg); opacity: 0; }
+    70% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Sunburst Light Rays */
+.sunburst-rays {
+    position: absolute;
+    width: 650px;
+    height: 650px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: repeating-conic-gradient(
+        from 0deg,
+        rgba(255, 215, 0, 0.25) 0deg 15deg,
+        transparent 15deg 30deg
+    );
+    border-radius: 50%;
+    pointer-events: none;
+    animation: sunburstRotate 15s linear infinite;
+    z-index: -1;
+}
+
+@keyframes sunburstRotate {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Celebration Badges */
+.celebration-badge {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-shadow: 0 0 30px currentColor;
+    animation: badgePulse 0.8s infinite alternate;
+}
+
+.tier-nice {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 25px var(--neon-cyan), 0 0 50px rgba(0, 240, 255, 0.6);
+}
+
+.tier-big {
+    color: var(--neon-pink);
+    text-shadow: 0 0 30px var(--neon-pink), 0 0 60px rgba(255, 0, 127, 0.8);
+}
+
+.tier-mega {
+    color: var(--neon-gold);
+    text-shadow: 0 0 35px var(--neon-gold), 0 0 70px rgba(255, 183, 0, 0.9);
+}
+
+.tier-godlike {
+    background: linear-gradient(90deg, #fff, #ffd700, #ff007f, #00f0ff, #fff);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: titleGradient 2s infinite linear, badgePulse 0.5s infinite alternate;
+    font-size: 3.6rem;
+    filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.9));
+}
+
+@keyframes badgePulse {
+    0% { transform: scale(0.96); }
+    100% { transform: scale(1.05); }
+}
+
+/* Animated Win Number Counter */
+.celebration-counter {
+    font-family: var(--font-display);
+    font-size: 4rem;
+    font-weight: 900;
+    color: #ffffff;
+    text-shadow: 0 0 30px var(--neon-gold), 0 0 60px #ffea70;
+    margin-bottom: 14px;
+    animation: counterBounce 0.4s infinite alternate;
+}
+
+@keyframes counterBounce {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.06); }
+}
+
+.celebration-sub {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    letter-spacing: 3px;
+    color: #e0e0ff;
+    margin-bottom: 24px;
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+}
+
+/* Collect Button */
+.celebration-collect-btn {
+    background: linear-gradient(135deg, #ffd700 0%, #ff8800 100%);
+    color: #000;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 900;
+    padding: 16px 36px;
+    border-radius: 40px;
+    border: 3px solid #fff;
+    cursor: pointer;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 10px 20px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.celebration-collect-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 50px rgba(255, 215, 0, 1), 0 12px 25px rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 768px) {
+    .celebration-badge {
+        font-size: 2rem;
+    }
+    .tier-godlike {
+        font-size: 2.3rem;
+    }
+    .celebration-counter {
+        font-size: 2.8rem;
+    }
+    .sunburst-rays {
+        width: 350px;
+        height: 350px;
+    }
+}

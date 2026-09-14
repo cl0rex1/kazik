@@ -1,0 +1,416 @@
+:root {
+    --bg-dark: #070611;
+    --bg-surface: #100f24;
+    --bg-glass: rgba(22, 19, 44, 0.85);
+    --neon-pink: #ff007f;
+    --neon-cyan: #00f0ff;
+    --neon-purple: #9d00ff;
+    --neon-gold: #ffb700;
+    --neon-green: #00ff88;
+    --text-primary: #ffffff;
+    --text-muted: #8b88ad;
+    --border-glow: 0 0 15px rgba(255, 0, 127, 0.5), inset 0 0 15px rgba(0, 240, 255, 0.3);
+    --gold-glow: 0 0 20px rgba(255, 183, 0, 0.7);
+    --font-display: 'Orbitron', -apple-system, sans-serif;
+    --font-ui: 'Rajdhani', -apple-system, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background-image: 
+        radial-gradient(circle at 50% 20%, rgba(157, 0, 255, 0.22) 0%, transparent 60%),
+        radial-gradient(circle at 15% 85%, rgba(0, 240, 255, 0.15) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(255, 0, 127, 0.15) 0%, transparent 45%),
+        linear-gradient(180deg, #070611 0%, #0c0a1d 100%);
+    background-attachment: fixed;
+}
+
+/* Canvas Particle Layer */
+#particleCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 100;
+}
+
+/* App Main Container */
+.casino-app-container {
+    width: 100%;
+    max-width: 1150px;
+    padding: 12px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+}
+
+/* Header */
+.casino-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    margin-bottom: 12px;
+    background: var(--bg-glass);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.neon-title-container {
+    text-align: center;
+}
+
+.neon-sub {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    letter-spacing: 5px;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 8px var(--neon-cyan);
+}
+
+.neon-title {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #fff, #ffd700, #ff007f, #00f0ff);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: titleGradient 6s ease infinite;
+    text-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
+}
+
+.neon-777 {
+    color: var(--neon-gold);
+    -webkit-text-fill-color: var(--neon-gold);
+    text-shadow: 0 0 12px var(--neon-gold), 0 0 24px var(--neon-pink);
+    animation: pulse777 1.5s infinite alternate;
+}
+
+@keyframes titleGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse777 {
+    0% { transform: scale(1); filter: brightness(1); }
+    100% { transform: scale(1.08); filter: brightness(1.4); }
+}
+
+/* Pill Buttons */
+.pill-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-family: var(--font-ui);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.pill-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+}
+
+.neon-gold-btn {
+    border-color: var(--neon-gold);
+    color: var(--neon-gold);
+    box-shadow: 0 0 8px rgba(255, 183, 0, 0.3);
+}
+
+.neon-gold-btn:hover {
+    border-color: #ffe600;
+    box-shadow: 0 0 18px rgba(255, 230, 0, 0.6);
+}
+
+.icon-only-btn {
+    padding: 8px 12px;
+    border-radius: 50%;
+}
+
+/* Jackpots Ticker Bar */
+.jackpots-bar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.6fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.jackpot-card {
+    background: linear-gradient(135deg, rgba(26, 18, 51, 0.9), rgba(12, 10, 26, 0.95));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 8px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8);
+    position: relative;
+    overflow: hidden;
+}
+
+.jackpot-card.mini {
+    border-color: rgba(0, 240, 255, 0.4);
+}
+.jackpot-card.mini .jp-amount {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+}
+
+.jackpot-card.major {
+    border-color: rgba(255, 0, 127, 0.5);
+}
+.jackpot-card.major .jp-amount {
+    color: var(--neon-pink);
+    text-shadow: 0 0 12px rgba(255, 0, 127, 0.7);
+}
+
+.jackpot-card.grand {
+    border-color: var(--neon-gold);
+    background: linear-gradient(135deg, rgba(58, 38, 0, 0.8), rgba(20, 13, 0, 0.95));
+    box-shadow: 0 0 20px rgba(255, 183, 0, 0.3), inset 0 0 15px rgba(255, 183, 0, 0.2);
+}
+.jackpot-card.grand .jp-amount {
+    color: #fff2a3;
+    font-size: 1.4rem;
+    text-shadow: 0 0 15px var(--neon-gold), 0 0 25px rgba(255, 183, 0, 0.8);
+}
+
+.jp-label {
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    font-weight: 800;
+}
+
+.jackpot-card.grand .jp-label {
+    color: var(--neon-gold);
+}
+
+.jp-amount {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 900;
+    margin-top: 2px;
+}
+
+/* Modals */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(4, 3, 10, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-backdrop.hidden {
+    display: none !important;
+}
+
+.modal-card {
+    background: var(--bg-surface);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 680px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 24px;
+    box-shadow: 0 0 35px rgba(0, 240, 255, 0.4);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+}
+
+.modal-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--neon-cyan);
+    letter-spacing: 1px;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.symbols-payout-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.symbol-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+}
+
+.symbol-card .symbol-icon {
+    font-size: 2.2rem;
+    margin-bottom: 4px;
+}
+
+.symbol-card .symbol-name {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--neon-gold);
+}
+
+.symbol-card .payout-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.special-card.wild-card {
+    border-color: var(--neon-pink);
+    background: rgba(255, 0, 127, 0.08);
+}
+.special-card.scatter-card {
+    border-color: var(--neon-cyan);
+    background: rgba(0, 240, 255, 0.08);
+}
+
+.paylines-info {
+    text-align: center;
+    padding: 14px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+.paylines-info h3 {
+    font-family: var(--font-display);
+    color: var(--neon-gold);
+    font-size: 1rem;
+    margin-bottom: 6px;
+}
+.paylines-info p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* ATM Modal */
+.atm-card {
+    max-width: 480px;
+    border-color: var(--neon-gold);
+    box-shadow: 0 0 35px rgba(255, 183, 0, 0.4);
+}
+.atm-desc {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+.atm-options {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+.atm-claim-btn {
+    background: rgba(255, 183, 0, 0.1);
+    border: 2px solid var(--neon-gold);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.atm-claim-btn:hover {
+    background: var(--neon-gold);
+    color: #000;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px var(--neon-gold);
+}
+.atm-claim-btn.atm-highlight {
+    background: rgba(255, 183, 0, 0.25);
+    box-shadow: 0 0 15px rgba(255, 183, 0, 0.5);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+    .casino-header {
+        padding: 6px 12px;
+    }
+    .neon-title {
+        font-size: 1.25rem;
+    }
+    .pill-btn .label {
+        display: none;
+    }
+    .jackpots-bar {
+        grid-template-columns: 1fr 1fr;
+    }
+    .jackpot-card.grand {
+        grid-column: span 2;
+    }
+}

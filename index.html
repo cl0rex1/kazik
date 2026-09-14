@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CYBER VEGAS 777 - Глазораздирающий Слот</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/slot.css">
+    <link rel="stylesheet" href="css/effects.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background Canvas for Fireworks, Confetti, and 3D Golden Coins -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Strobe and Chromatic Aberration Flash Layer -->
+    <div id="screenFxOverlay" class="screen-fx-overlay"></div>
+
+    <div class="casino-app-container">
+        <!-- Top Navigation Bar -->
+        <header class="casino-header">
+            <div class="header-left">
+                <button id="paytableBtn" class="pill-btn neon-btn" title="Таблица выплат">
+                    <span class="icon">📜</span>
+                    <span class="label">Выплаты</span>
+                </button>
+                <button id="atmBtn" class="pill-btn neon-gold-btn" title="Пополнить баланс">
+                    <span class="icon">💳</span>
+                    <span class="label">Банкомат</span>
+                </button>
+            </div>
+
+            <div class="casino-brand">
+                <div class="neon-title-container">
+                    <span class="neon-sub">ULTRA NEON</span>
+                    <h1 class="neon-title">CYBER VEGAS <span class="neon-777">777</span></h1>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <button id="soundToggleBtn" class="pill-btn icon-only-btn neon-btn" title="Звук Вкл/Выкл">
+                    <span id="soundIcon" class="icon">🔊</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Progressive Jackpots Display -->
+        <div class="jackpots-bar">
+            <div class="jackpot-card mini">
+                <span class="jp-label">MINI</span>
+                <span class="jp-amount" id="jpMiniVal">$1,250.00</span>
+            </div>
+            <div class="jackpot-card major">
+                <span class="jp-label">MAJOR</span>
+                <span class="jp-amount" id="jpMajorVal">$8,940.00</span>
+            </div>
+            <div class="jackpot-card grand pulsing-grand">
+                <span class="jp-label">⚡ GRAND JACKPOT ⚡</span>
+                <span class="jp-amount" id="jpGrandVal">$150,000.00</span>
+            </div>
+        </div>
+
+        <!-- Slot Machine Cabinet -->
+        <main class="cabinet-wrapper">
+            <div class="cabinet-housing" id="cabinetHousing">
+                <!-- Free Spins Banner indicator -->
+                <div id="freeSpinsBanner" class="free-spins-indicator hidden">
+                    <span class="flame-icon">🔥</span>
+                    <span class="fs-text">FREE SPINS РЕЖИМ: <strong id="fsLeftCount">10</strong> СПИНОВ (МНОЖИТЕЛЬ x3)</span>
+                    <span class="flame-icon">🔥</span>
+                </div>
+
+                <!-- Slot Machine Display Frame -->
+                <div class="reels-frame" id="reelsFrame">
+                    <!-- SVG Paylines Overlay for laser line animations -->
+                    <svg id="paylinesSvg" class="paylines-svg"></svg>
+
+                    <!-- Slot Reels Container (5 reels) -->
+                    <div class="reels-grid" id="reelsGrid">
+                        <!-- Reel 0 -->
+                        <div class="reel-column" data-reel="0">
+                            <div class="reel-strip" id="reelStrip-0"></div>
+                            <div class="reel-glow-overlay"></div>
+                        </div>
+                        <!-- Reel 1 -->
+                        <div class="reel-column" data-reel="1">
+                            <div class="reel-strip" id="reelStrip-1"></div>
+                            <div class="reel-glow-overlay"></div>
+                        </div>
+                        <!-- Reel 2 -->
+                        <div class="reel-column" data-reel="2">
+                            <div class="reel-strip" id="reelStrip-2"></div>
+                            <div class="reel-glow-overlay"></div>
+                        </div>
+                        <!-- Reel 3 -->
+                        <div class="reel-column" data-reel="3">
+                            <div class="reel-strip" id="reelStrip-3"></div>
+                            <div class="reel-glow-overlay"></div>
+                        </div>
+                        <!-- Reel 4 -->
+                        <div class="reel-column" data-reel="4">
+                            <div class="reel-strip" id="reelStrip-4"></div>
+                            <div class="reel-glow-overlay"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive 3D Pullable Lever -->
+                <div class="mechanical-lever" id="slotLever" title="Потяни за рычаг!">
+                    <div class="lever-socket"></div>
+                    <div class="lever-shaft">
+                        <div class="lever-ball"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Dashboard / Control Panel -->
+            <div class="control-panel">
+                <!-- Info Displays -->
+                <div class="meters-row">
+                    <div class="meter-box balance-box">
+                        <span class="meter-label">БАЛАНС</span>
+                        <div class="meter-value" id="balanceDisplay">$10,000.00</div>
+                    </div>
+                    <div class="meter-box win-box">
+                        <span class="meter-label">ПОСЛЕДНИЙ ВЫИГРЫШ</span>
+                        <div class="meter-value win-glow" id="winDisplay">$0.00</div>
+                    </div>
+                    <div class="meter-box bet-box">
+                        <span class="meter-label">СТАВКА (20 ЛИНИЙ)</span>
+                        <div class="bet-adjust-wrap">
+                            <button id="betDownBtn" class="bet-adj-btn" aria-label="Уменьшить ставку">-</button>
+                            <span class="meter-value bet-val" id="betDisplay">$20.00</span>
+                            <button id="betUpBtn" class="bet-adj-btn" aria-label="Увеличить ставку">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons Row -->
+                <div class="action-buttons-row">
+                    <button id="maxBetBtn" class="cyber-btn secondary-btn">
+                        <span class="btn-text">МАКС СТАВКА</span>
+                    </button>
+                    <button id="turboBtn" class="cyber-btn toggle-btn">
+                        <span class="btn-icon">⚡</span>
+                        <span class="btn-text">ТУРБО</span>
+                    </button>
+                    <button id="autoSpinBtn" class="cyber-btn toggle-btn">
+                        <span class="btn-icon">🔄</span>
+                        <span class="btn-text">АВТО</span>
+                    </button>
+                    <button id="spinBtn" class="cyber-btn spin-main-btn">
+                        <div class="spin-btn-fx"></div>
+                        <span class="spin-main-text">КРУТИТЬ</span>
+                        <span class="spin-subtext">[ ПРОБЕЛ ]</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Celebration Mega Overlay -->
+    <div id="celebrationOverlay" class="celebration-overlay hidden">
+        <div class="celebration-backdrop"></div>
+        <div class="celebration-content" id="celebrationCard">
+            <div class="sunburst-rays"></div>
+            <div class="celebration-badge" id="celebrationTierBadge">МЕГА ВЫИГРЫШ!</div>
+            <div class="celebration-counter" id="celebrationCounter">$0.00</div>
+            <div class="celebration-sub" id="celebrationSub">ПОТРЯСАЮЩИЙ РЕЗУЛЬТАТ!</div>
+            <button id="celebrationCollectBtn" class="celebration-collect-btn">ЗАБРАТЬ КУШ</button>
+        </div>
+    </div>
+
+    <!-- Paytable Modal -->
+    <div id="paytableModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>ТАБЛИЦА ВЫПЛАТ И ПРАВИЛА</h2>
+                <button id="closePaytableBtn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="symbols-payout-grid">
+                    <div class="symbol-card">
+                        <div class="symbol-icon">👑</div>
+                        <div class="symbol-name">КОРОНА</div>
+                        <div class="payout-desc">5x: 250x | 4x: 50x | 3x: 10x</div>
+                    </div>
+                    <div class="symbol-card">
+                        <div class="symbol-icon">💎</div>
+                        <div class="symbol-name">АЛМАЗ</div>
+                        <div class="payout-desc">5x: 150x | 4x: 35x | 3x: 8x</div>
+                    </div>
+                    <div class="symbol-card">
+                        <div class="symbol-icon">7️⃣</div>
+                        <div class="symbol-name">СЕМЕРКА</div>
+                        <div class="payout-desc">5x: 100x | 4x: 25x | 3x: 6x</div>
+                    </div>
+                    <div class="symbol-card">
+                        <div class="symbol-icon">🔔</div>
+                        <div class="symbol-name">КОЛОКОЛ</div>
+                        <div class="payout-desc">5x: 50x | 4x: 15x | 3x: 4x</div>
+                    </div>
+                    <div class="symbol-card">
+                        <div class="symbol-icon">🍀</div>
+                        <div class="symbol-name">КЛЕВЕР</div>
+                        <div class="payout-desc">5x: 35x | 4x: 10x | 3x: 3x</div>
+                    </div>
+                    <div class="symbol-card">
+                        <div class="symbol-icon">🍒</div>
+                        <div class="symbol-name">ВИШНЯ</div>
+                        <div class="payout-desc">5x: 25x | 4x: 8x | 3x: 2x</div>
+                    </div>
+                    <div class="symbol-card">
+                        <div class="symbol-icon">🍋</div>
+                        <div class="symbol-name">ЛИМОН</div>
+                        <div class="payout-desc">5x: 15x | 4x: 5x | 3x: 1.5x</div>
+                    </div>
+                    <div class="symbol-card special-card wild-card">
+                        <div class="symbol-icon">⭐</div>
+                        <div class="symbol-name">WILD</div>
+                        <div class="payout-desc">Заменяет любой символ (кроме Scatter)</div>
+                    </div>
+                    <div class="symbol-card special-card scatter-card">
+                        <div class="symbol-icon">⚡</div>
+                        <div class="symbol-name">SCATTER</div>
+                        <div class="payout-desc">3+ символа активируют 10 Free Spins с множителем x3!</div>
+                    </div>
+                </div>
+                <div class="paylines-info">
+                    <h3>20 ВЫИГРЫШНЫХ ЛИНИЙ</h3>
+                    <p>Комбинации засчитываются слева направо на активных линиях.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ATM Modal -->
+    <div id="atmModal" class="modal-backdrop hidden">
+        <div class="modal-card atm-card">
+            <div class="modal-header">
+                <h2>БАНКОМАТ / БОНУСНЫЕ ФИШКИ</h2>
+                <button id="closeAtmBtn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="atm-desc">Закончились кредиты или хочешь сыграть по-крупному? Возьми банкрот-страховку без ограничений!</p>
+                <div class="atm-options">
+                    <button class="atm-claim-btn" data-amount="1000">+$1,000</button>
+                    <button class="atm-claim-btn atm-highlight" data-amount="5000">+$5,000</button>
+                    <button class="atm-claim-btn" data-amount="20000">+$20,000</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Engine Scripts -->
+    <script src="js/audio.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/slot-engine.js"></script>
+    <script src="js/celebrations.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
