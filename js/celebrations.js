@@ -1,6 +1,7 @@
 /**
  * Win FX & Celebration Orchestrator
  * Controls tiered visual effects, camera shakes, rolling counters, and particle explosions.
+ * Strict rule: Never auto-skips or auto-dismisses Big/Mega/Godlike win overlay until a button is clicked!
  */
 
 class CelebrationsOrchestrator {
@@ -10,11 +11,11 @@ class CelebrationsOrchestrator {
         this.counter = document.getElementById('celebrationCounter');
         this.subText = document.getElementById('celebrationSub');
         this.collectBtn = document.getElementById('celebrationCollectBtn');
+        this.shareBtn = document.getElementById('celebrationShareBtn');
         this.screenFx = document.getElementById('screenFxOverlay');
 
         this.currentCounterAnim = null;
         this.currentResolve = null;
-        this.autoDismissTimer = null;
 
         if (this.collectBtn) {
             this.collectBtn.addEventListener('click', (e) => {
@@ -22,9 +23,14 @@ class CelebrationsOrchestrator {
                 this.dismiss();
             });
         }
-        if (this.overlay) {
-            // Clicking anywhere on overlay or backdrop dismisses celebration
-            this.overlay.addEventListener('click', () => this.dismiss());
+        if (this.shareBtn) {
+            this.shareBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Open share card without closing celebration underneath
+                if (window.shareCard) {
+                    window.shareCard.openWithCurrentState();
+                }
+            });
         }
     }
 
@@ -118,6 +124,7 @@ class CelebrationsOrchestrator {
             }
 
             // Big, Mega, or Godlike: Show Fullscreen Celebration Overlay
+            // Rule: NEVER auto-skips until user clicks "ЗАБРАТЬ КУШ" or modal button!
             if (this.overlay) {
                 this.overlay.classList.remove('hidden');
             }
@@ -126,7 +133,6 @@ class CelebrationsOrchestrator {
             }
 
             let counterDuration = 1600;
-            let autoDismissAfter = 4000;
 
             if (tier === 'big') {
                 if (this.tierBadge) {
@@ -140,7 +146,6 @@ class CelebrationsOrchestrator {
                 window.particleEngine.burstCoins(60);
                 window.particleEngine.burstConfetti(100);
                 counterDuration = 1400;
-                autoDismissAfter = 3200;
             } else if (tier === 'mega') {
                 if (this.tierBadge) {
                     this.tierBadge.textContent = '⚡ МЕГА ВЫИГРЫШ! ⚡';
@@ -154,7 +159,6 @@ class CelebrationsOrchestrator {
                 window.particleEngine.burstConfetti(180);
                 window.particleEngine.burstFireworks(50);
                 counterDuration = 1800;
-                autoDismissAfter = 4000;
             } else if (tier === 'godlike') {
                 if (this.tierBadge) {
                     this.tierBadge.textContent = '👑 ДЖЕКПОТ БОГОВ! 👑';
@@ -166,25 +170,14 @@ class CelebrationsOrchestrator {
                 window.casinoAudio.playWinFanfare('godlike');
                 window.particleEngine.startJackpotStorm();
                 counterDuration = 2200;
-                autoDismissAfter = 5000;
             }
 
             this.animateCounter(winAmount, counterDuration);
-
-            // Guaranteed auto-dismiss safety timer
-            if (this.autoDismissTimer) clearTimeout(this.autoDismissTimer);
-            this.autoDismissTimer = setTimeout(() => {
-                this.dismiss();
-            }, autoDismissAfter);
+            // Notice: NO autoDismissTimer! Stays open until user clicks button!
         });
     }
 
     dismiss() {
-        if (this.autoDismissTimer) {
-            clearTimeout(this.autoDismissTimer);
-            this.autoDismissTimer = null;
-        }
-
         if (this.currentCounterAnim) {
             cancelAnimationFrame(this.currentCounterAnim);
             this.currentCounterAnim = null;

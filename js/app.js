@@ -5,7 +5,8 @@
 
 class CasinoApp {
     constructor() {
-        this.balance = parseFloat(localStorage.getItem('casino_balance')) || 10000;
+        const saved = parseFloat(localStorage.getItem('casino_balance'));
+        this.balance = (!isNaN(saved) && saved > 0) ? saved : 10000;
         this.bets = [5, 10, 25, 50, 100, 250, 500, 1000, 2500];
         this.betIndex = 2; // Default $25 (5 lines x $5)
         this.isSpinning = false;
@@ -42,6 +43,8 @@ class CasinoApp {
             atmBtn: document.getElementById('atmBtn'),
             closeAtmBtn: document.getElementById('closeAtmBtn'),
             atmModal: document.getElementById('atmModal'),
+            welcomeModal: document.getElementById('welcomeModal'),
+            claimWelcomeBtn: document.getElementById('claimWelcomeBtn'),
             freeSpinsBanner: document.getElementById('freeSpinsBanner'),
             fsLeftCount: document.getElementById('fsLeftCount'),
             paylinesSvg: document.getElementById('paylinesSvg'),
@@ -63,6 +66,25 @@ class CasinoApp {
         this.bindEvents();
         this.updateSoundIcon();
         this.startJackpotTicker();
+        this.checkWelcomeBonus();
+    }
+
+    checkWelcomeBonus() {
+        if (!this.dom.welcomeModal || !this.dom.claimWelcomeBtn) return;
+        const claimed = localStorage.getItem('casino_welcome_claimed');
+        if (!claimed) {
+            this.dom.welcomeModal.classList.remove('hidden');
+            this.dom.claimWelcomeBtn.addEventListener('click', () => {
+                localStorage.setItem('casino_welcome_claimed', 'true');
+                this.dom.welcomeModal.classList.add('hidden');
+                this.freeSpinsRemaining += 15;
+                if (this.dom.fsLeftCount) this.dom.fsLeftCount.textContent = this.freeSpinsRemaining;
+                if (this.dom.freeSpinsBanner) this.dom.freeSpinsBanner.classList.remove('hidden');
+                window.casinoAudio.playFreeSpinsTrigger();
+                window.particleEngine.burstFireworks(80);
+                window.particleEngine.burstCoins(50);
+            }, { once: true });
+        }
     }
 
     formatCurrency(val) {
@@ -145,7 +167,7 @@ class CasinoApp {
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
                 e.preventDefault();
-                // If celebration modal is open, dismiss it
+                // If celebration modal is open, collect it
                 if (window.celebrations && window.celebrations.overlay && !window.celebrations.overlay.classList.contains('hidden')) {
                     window.celebrations.dismiss();
                     return;
@@ -299,11 +321,6 @@ class CasinoApp {
     }
 
     handleSpinRequest() {
-        // If celebration overlay is active, dismiss it first
-        if (window.celebrations && window.celebrations.overlay && !window.celebrations.overlay.classList.contains('hidden')) {
-            window.celebrations.dismiss();
-        }
-
         if (this.isSpinning) return;
 
         const currentBet = this.getCurrentBet();
@@ -356,6 +373,14 @@ class CasinoApp {
 
             // Evaluate results
             const result = window.slotEngine.evaluateSpin(outcomeGrid, currentBet, isFree);
+
+            // On Major Wins, pause auto-spin so player can enjoy celebration and share!
+            if (result.celebrationTier === 'big' || result.celebrationTier === 'mega' || result.celebrationTier === 'godlike') {
+                if (this.isAutoSpinning) {
+                    this.isAutoSpinning = false;
+                    if (this.dom.autoSpinBtn) this.dom.autoSpinBtn.classList.remove('active');
+                }
+            }
 
             await this.handleSpinResult(result);
         } catch (err) {
@@ -420,7 +445,7 @@ class CasinoApp {
                 strip.innerHTML = '';
                 strip.appendChild(fragment);
 
-                const symbolHeight = (strip.children[0] && strip.children[0].offsetHeight) ? strip.children[0].offsetHeight : 130;
+                const symbolHeight = (strip.children[0] && strip.children[0].offsetHeight) ? strip.children[0].offsetHeight : 104;
                 const totalDistance = spinSymbolCount * symbolHeight;
 
                 const colDelay = col * reelStaggerDelay;
@@ -492,7 +517,7 @@ class CasinoApp {
             if (this.dom.win) this.dom.win.textContent = '$0.00';
         }
 
-        // Free Spins triggered
+        // Free Spins triggered in round
         if (result.freeSpinsAwarded > 0) {
             this.freeSpinsRemaining += result.freeSpinsAwarded;
             if (this.dom.fsLeftCount) this.dom.fsLeftCount.textContent = this.freeSpinsRemaining;

@@ -1,7 +1,6 @@
 /**
  * Share Card Generator
- * Renders a stylized cyber-vegas win card using HTML5 Canvas,
- * with support for Web Share API (mobile/desktop), PNG download, and Clipboard copy.
+ * Stylized winner card rendered on Canvas, with Web Share API, PNG download, and Clipboard copy.
  */
 
 class ShareCardGenerator {
@@ -93,28 +92,28 @@ class ShareCardGenerator {
             }
         };
 
-        // 1. Background Gradient
+        // 1. Dark Neon Background Gradient
         const bgGrad = ctx.createLinearGradient(0, 0, w, h);
-        bgGrad.addColorStop(0, '#0a0818');
-        bgGrad.addColorStop(0.5, '#151032');
-        bgGrad.addColorStop(1, '#070512');
+        bgGrad.addColorStop(0, '#090716');
+        bgGrad.addColorStop(0.5, '#161036');
+        bgGrad.addColorStop(1, '#060512');
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, w, h);
 
-        // Neon Glow Orbs
+        // Neon Radial Flares
         const glow1 = ctx.createRadialGradient(180, 120, 20, 180, 120, 260);
-        glow1.addColorStop(0, 'rgba(255, 0, 127, 0.3)');
+        glow1.addColorStop(0, 'rgba(255, 0, 127, 0.32)');
         glow1.addColorStop(1, 'transparent');
         ctx.fillStyle = glow1;
         ctx.fillRect(0, 0, w, h);
 
         const glow2 = ctx.createRadialGradient(740, 460, 20, 740, 460, 320);
-        glow2.addColorStop(0, 'rgba(0, 240, 255, 0.28)');
+        glow2.addColorStop(0, 'rgba(0, 240, 255, 0.3)');
         glow2.addColorStop(1, 'transparent');
         ctx.fillStyle = glow2;
         ctx.fillRect(0, 0, w, h);
 
-        // Outer Neon Border
+        // Outer Glowing Neon Machine Border
         ctx.strokeStyle = '#00f0ff';
         ctx.lineWidth = 4;
         ctx.shadowColor = '#00f0ff';
@@ -142,8 +141,8 @@ class ShareCardGenerator {
         const reelBoxX = 50;
         const reelBoxY = 135;
 
-        // Reel Bezel
-        ctx.fillStyle = '#0e0b20';
+        // Reel Bezel Housing
+        ctx.fillStyle = '#0c0a1f';
         ctx.strokeStyle = '#2f2858';
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -159,28 +158,40 @@ class ShareCardGenerator {
                 const cellX = reelBoxX + 12 + col * cellW;
                 const cellY = reelBoxY + 12 + row * cellH;
 
-                // Cell box
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+                // Glowing tile card for each symbol
+                const cellGrad = ctx.createLinearGradient(cellX, cellY, cellX, cellY + cellH);
+                cellGrad.addColorStop(0, '#221a4f');
+                cellGrad.addColorStop(1, '#110d29');
+                ctx.fillStyle = cellGrad;
+                ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
                 ctx.lineWidth = 1.5;
                 ctx.beginPath();
-                drawRoundRect(cellX + 4, cellY + 4, cellW - 8, cellH - 8, 12);
+                drawRoundRect(cellX + 3, cellY + 3, cellW - 6, cellH - 6, 12);
                 ctx.fill();
                 ctx.stroke();
 
-                // Draw Symbol with full opacity and bright emoji font
-                const sym = (grid && grid[col] && grid[col][row]) ? grid[col][row] : { icon: '7️⃣', name: '777' };
+                // Draw Symbol
+                const sym = (grid && grid[col] && grid[col][row]) ? grid[col][row] : { id: 'seven', icon: '7️⃣', name: 'Семерка' };
                 
+                // Draw Emoji Icon
                 ctx.save();
-                // CRITICAL FIX: Reset fillStyle to #fff so emoji alpha isn't masked to 5%!
                 ctx.fillStyle = '#ffffff';
                 ctx.globalAlpha = 1.0;
                 ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
                 ctx.shadowBlur = 12;
-                ctx.font = '56px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+                ctx.font = '52px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(sym.icon, cellX + cellW / 2, cellY + cellH / 2);
+                ctx.fillText(sym.icon, cellX + cellW / 2, cellY + cellH / 2 - 10);
+                ctx.restore();
+
+                // Draw Symbol Name in neon text
+                ctx.save();
+                ctx.font = 'bold 12px "Orbitron", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = sym.isWild ? '#ff007f' : sym.isScatter ? '#00f0ff' : '#ffd700';
+                ctx.fillText(sym.name.toUpperCase(), cellX + cellW / 2, cellY + cellH / 2 + 30);
                 ctx.restore();
             }
         }
@@ -191,7 +202,7 @@ class ShareCardGenerator {
         const statsW = 350;
         const statsH = 340;
 
-        ctx.fillStyle = '#100c26';
+        ctx.fillStyle = '#0f0c24';
         ctx.strokeStyle = '#ffd700';
         ctx.lineWidth = 2.5;
         ctx.shadowColor = '#ffd700';
@@ -207,79 +218,84 @@ class ShareCardGenerator {
         ctx.font = 'bold 15px "Orbitron", sans-serif';
         ctx.fillStyle = '#00f0ff';
         ctx.letterSpacing = '1px';
-        ctx.fillText('ВЫИГРЫШ В РАУНДЕ', statsX + statsW / 2, statsY + 48);
+        ctx.fillText('ВЫИГРЫШ В РАУНДЕ', statsX + statsW / 2, statsY + 44);
 
-        ctx.font = '900 42px "Orbitron", sans-serif';
+        ctx.font = '900 40px "Orbitron", sans-serif';
         ctx.fillStyle = '#ffd700';
         ctx.shadowColor = '#ffea70';
         ctx.shadowBlur = 20;
         const formattedWin = '$' + Number(win).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        ctx.fillText(formattedWin, statsX + statsW / 2, statsY + 102);
+        ctx.fillText(formattedWin, statsX + statsW / 2, statsY + 98);
         ctx.shadowBlur = 0;
 
-        // Horizontal Divider
+        // Divider
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(statsX + 25, statsY + 138);
-        ctx.lineTo(statsX + statsW - 25, statsY + 138);
+        ctx.moveTo(statsX + 20, statsY + 130);
+        ctx.lineTo(statsX + statsW - 20, statsY + 130);
         ctx.stroke();
 
-        // 2-Column Stats Layout (Zero Horizontal Text Collisions!)
-        const col1Center = statsX + statsW * 0.28;
-        const col2Center = statsX + statsW * 0.72;
+        // 2 Dedicated Cards for Bet & Balance (Eliminates any horizontal collision!)
+        const cardW = 145;
+        const cardH = 80;
+        const cardY = statsY + 148;
 
-        // Column 1: СТАВКА
+        // Bet Card (Left)
+        const betCardX = statsX + 20;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        drawRoundRect(betCardX, cardY, cardW, cardH, 12);
+        ctx.fill();
+        ctx.stroke();
+
         ctx.textAlign = 'center';
-        ctx.font = 'bold 14px "Rajdhani", sans-serif';
+        ctx.font = 'bold 13px "Rajdhani", sans-serif';
         ctx.letterSpacing = '1.5px';
         ctx.fillStyle = '#8b88ad';
-        ctx.fillText('СТАВКА', col1Center, statsY + 175);
+        ctx.fillText('СТАВКА', betCardX + cardW / 2, cardY + 26);
 
-        ctx.font = 'bold 22px "Orbitron", sans-serif';
+        ctx.font = 'bold 20px "Orbitron", sans-serif';
         ctx.fillStyle = '#ffffff';
-        ctx.fillText('$' + Number(bet).toFixed(2), col1Center, statsY + 208);
+        ctx.fillText('$' + Number(bet).toFixed(2), betCardX + cardW / 2, cardY + 56);
 
-        // Vertical divider between columns
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-        ctx.lineWidth = 1;
+        // Balance Card (Right)
+        const balCardX = statsX + statsW - cardW - 20;
+        ctx.fillStyle = 'rgba(0, 255, 136, 0.04)';
+        ctx.strokeStyle = 'rgba(0, 255, 136, 0.35)';
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(statsX + statsW / 2, statsY + 160);
-        ctx.lineTo(statsX + statsW / 2, statsY + 225);
+        drawRoundRect(balCardX, cardY, cardW, cardH, 12);
+        ctx.fill();
         ctx.stroke();
 
-        // Column 2: БАЛАНС
         ctx.textAlign = 'center';
-        ctx.font = 'bold 14px "Rajdhani", sans-serif';
+        ctx.font = 'bold 13px "Rajdhani", sans-serif';
         ctx.letterSpacing = '1.5px';
         ctx.fillStyle = '#8b88ad';
-        ctx.fillText('БАЛАНС', col2Center, statsY + 175);
+        ctx.fillText('БАЛАНС', balCardX + cardW / 2, cardY + 26);
 
-        ctx.font = 'bold 22px "Orbitron", sans-serif';
+        ctx.font = 'bold 19px "Orbitron", sans-serif';
         ctx.fillStyle = '#00ff88';
-        ctx.fillText('$' + Number(balance).toLocaleString('en-US', { minimumFractionDigits: 2 }), col2Center, statsY + 208);
+        const formattedBal = '$' + Number(balance).toLocaleString('en-US', { minimumFractionDigits: 2 });
+        ctx.fillText(formattedBal, balCardX + cardW / 2, cardY + 56);
 
-        // Second Horizontal Divider
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(statsX + 25, statsY + 248);
-        ctx.lineTo(statsX + statsW - 25, statsY + 248);
-        ctx.stroke();
-
-        // Date stamp
+        // Date stamp badge
         const now = new Date();
         const dateStr = now.toLocaleDateString('ru-RU') + ' ' + now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
         ctx.textAlign = 'center';
         ctx.font = 'bold 14px "Rajdhani", sans-serif';
         ctx.letterSpacing = '1px';
-        ctx.fillStyle = '#7875a0';
-        ctx.fillText(`ПРОВЕРЕНО • ${dateStr}`, statsX + statsW / 2, statsY + 292);
+        ctx.fillStyle = '#7a76a2';
+        ctx.fillText(`● ПРОВЕРЕНО • ${dateStr}`, statsX + statsW / 2, statsY + 288);
 
-        // 5. Footer Watermark
-        ctx.font = '13px "Orbitron", sans-serif';
-        ctx.fillStyle = '#7a76a0';
-        ctx.fillText('CYBER VEGAS 777 • GITHUB PAGES', w / 2, 532);
+        // 5. Official Requested Footer Watermark Link: cl0rex1.github.io/kazik
+        ctx.font = 'bold 14px "Orbitron", sans-serif';
+        ctx.letterSpacing = '2px';
+        ctx.fillStyle = '#00f0ff';
+        ctx.fillText('cl0rex1.github.io/kazik  •  CYBER VEGAS 777', w / 2, 535);
 
         // Convert to dataUrl and Blob
         this.currentDataUrl = this.canvas.toDataURL('image/png');
@@ -301,7 +317,7 @@ class ShareCardGenerator {
             try {
                 await navigator.share({
                     title: 'Мой занос в Cyber Vegas 777!',
-                    text: 'Смотри, какой куш я только что сорвал в Cyber Vegas 777! 🎰🔥',
+                    text: 'Смотри, какой куш я только что сорвал в Cyber Vegas 777! 🎰 cl0rex1.github.io/kazik',
                     files: [file]
                 });
                 this.showToast('Успешно отправлено!');
@@ -344,7 +360,7 @@ class ShareCardGenerator {
     }
 }
 
-// Guaranteed instantiation whether loaded early or late
+// Guaranteed instantiation
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         window.shareCard = new ShareCardGenerator();

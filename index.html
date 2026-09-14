@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>CYBER VEGAS 777 - 3-Барабанный Слот</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/slot.css">
@@ -72,7 +72,7 @@
                 <!-- Free Spins Banner indicator -->
                 <div id="freeSpinsBanner" class="free-spins-indicator hidden">
                     <span class="flame-icon">🔥</span>
-                    <span class="fs-text">FREE SPINS РЕЖИМ: <strong id="fsLeftCount">10</strong> СПИНОВ (МНОЖИТЕЛЬ x3)</span>
+                    <span class="fs-text">FREE SPINS: <strong id="fsLeftCount">15</strong> СПИНОВ (МНОЖИТЕЛЬ x3)</span>
                     <span class="flame-icon">🔥</span>
                 </div>
 
@@ -110,16 +110,25 @@
                 </div>
             </div>
 
-            <!-- Bottom Dashboard / Control Panel -->
+            <!-- Mobile Ergonomic Controls: SPIN BUTTON IMMEDIATELY UNDER REELS! -->
             <div class="control-panel">
-                <!-- Info Displays -->
+                <!-- Primary Spin Button directly adjacent to slot reels -->
+                <div class="primary-spin-container">
+                    <button id="spinBtn" class="cyber-btn spin-main-btn">
+                        <div class="spin-btn-fx"></div>
+                        <span class="spin-main-text">⚡ КРУТИТЬ ⚡</span>
+                        <span class="spin-subtext">[ ПРОБЕЛ ]</span>
+                    </button>
+                </div>
+
+                <!-- Info Displays Row -->
                 <div class="meters-row">
                     <div class="meter-box balance-box">
                         <span class="meter-label">БАЛАНС</span>
                         <div class="meter-value" id="balanceDisplay">$10,000.00</div>
                     </div>
                     <div class="meter-box win-box">
-                        <span class="meter-label">ПОСЛЕДНИЙ ВЫИГРЫШ</span>
+                        <span class="meter-label">ВЫИГРЫШ</span>
                         <div class="meter-value win-glow" id="winDisplay">$0.00</div>
                     </div>
                     <div class="meter-box bet-box">
@@ -132,11 +141,8 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons Row -->
+                <!-- Secondary Action Buttons Row -->
                 <div class="action-buttons-row">
-                    <button id="maxBetBtn" class="cyber-btn secondary-btn">
-                        <span class="btn-text">МАКС СТАВКА</span>
-                    </button>
                     <button id="turboBtn" class="cyber-btn toggle-btn">
                         <span class="btn-icon">⚡</span>
                         <span class="btn-text">ТУРБО</span>
@@ -145,14 +151,27 @@
                         <span class="btn-icon">🔄</span>
                         <span class="btn-text">АВТО</span>
                     </button>
-                    <button id="spinBtn" class="cyber-btn spin-main-btn">
-                        <div class="spin-btn-fx"></div>
-                        <span class="spin-main-text">КРУТИТЬ</span>
-                        <span class="spin-subtext">[ ПРОБЕЛ ]</span>
+                    <button id="maxBetBtn" class="cyber-btn secondary-btn">
+                        <span class="btn-text">МАКС СТАВКА</span>
                     </button>
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Welcome Free Spins Bonus Modal -->
+    <div id="welcomeModal" class="modal-backdrop hidden">
+        <div class="modal-card welcome-card">
+            <div class="welcome-header-badge">🎁 ВЕЛКОМ БОНУС</div>
+            <h2 class="welcome-title">15 БЕСПЛАТНЫХ СПИНОВ!</h2>
+            <p class="welcome-desc">Добро пожаловать в <strong>Cyber Vegas 777</strong>!<br>Каждому новому игроку дарим 15 фриспинов с множителем выигрыша <strong>x3</strong> во всех раундах!</p>
+            <div class="welcome-chips-fx">
+                <span class="chip-sparkle">⚡</span>
+                <span class="welcome-multiplier">МНОЖИТЕЛЬ x3</span>
+                <span class="chip-sparkle">⚡</span>
+            </div>
+            <button id="claimWelcomeBtn" class="welcome-claim-btn">⚡ ЗАБРАТЬ 15 СПИНОВ И ИГРАТЬ ⚡</button>
+        </div>
     </div>
 
     <!-- Celebration Mega Overlay -->
@@ -280,7 +299,7 @@
     </div>
 
     <!-- Hidden canvas used for screenshot generator -->
-    <canvas id="screenshotCanvas" width="900" height="600" style="display: none;"></canvas>
+    <canvas id="screenshotCanvas" width="920" height="580" style="display: none;"></canvas>
 
     <!-- Engine Scripts -->
     <script src="js/audio.js"></script>

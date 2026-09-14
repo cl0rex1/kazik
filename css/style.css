@@ -478,6 +478,75 @@ body {
     display: none !important;
 }
 
+/* Welcome Bonus Modal */
+.welcome-card {
+    max-width: 480px;
+    border-color: var(--neon-gold);
+    box-shadow: 0 0 45px rgba(255, 183, 0, 0.5), inset 0 0 20px rgba(255, 183, 0, 0.2);
+    text-align: center;
+    padding: 28px 24px;
+}
+.welcome-header-badge {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: var(--neon-gold);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-shadow: 0 0 12px var(--neon-gold);
+}
+.welcome-title {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    text-shadow: 0 0 20px rgba(255, 0, 127, 0.8);
+}
+.welcome-desc {
+    color: #c7c5e2;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    margin-bottom: 18px;
+}
+.welcome-chips-fx {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.welcome-multiplier {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 15px var(--neon-cyan);
+    padding: 6px 18px;
+    background: rgba(0, 240, 255, 0.12);
+    border: 1.5px solid var(--neon-cyan);
+    border-radius: 30px;
+}
+.welcome-claim-btn {
+    background: linear-gradient(135deg, #ffd700 0%, #ff5500 100%);
+    color: #000;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 900;
+    padding: 16px 24px;
+    border-radius: 40px;
+    border: 3px solid #fff;
+    cursor: pointer;
+    box-shadow: 0 0 30px rgba(255, 183, 0, 0.8);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    width: 100%;
+}
+.welcome-claim-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 45px rgba(255, 183, 0, 1);
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
