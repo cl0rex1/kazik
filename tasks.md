@@ -1,7 +1,5 @@
-# Tasks - Mega Update: Welcome Free Spins, Mobile UX, Screenshot & Auto-Spin Polish
+# Tasks - Fix Screenshot Image Sharing & Web Share Attachment
 
-- [x] Stage 1: Welcome Bonus Modal (15 Free Spins for all incoming players) <!-- id: stage-1 -->
-- [x] Stage 2: Screenshot Card Redesign (Vibrant Bright Symbols, No Collision, cl0rex1.github.io/kazik Link) <!-- id: stage-2 -->
-- [x] Stage 3: Mobile UX Redesign (Zero-Scroll Compact Layout, Button adjacent to Reels) <!-- id: stage-3 -->
-- [x] Stage 4: Auto-Spin & Celebration Fix (Never Auto-Skip Share/Celebration Modal) <!-- id: stage-4 -->
-- [x] Stage 5: Verification, Git Commit & GitHub Pages Readiness <!-- id: stage-5 -->
+- [x] Stage 1: Implement Synchronous Blob Generation & Share File Payload Fix <!-- id: stage-1 -->
+- [x] Stage 2: Enhance Share Modal UX (Direct Image Sharing, Copy, Download & Long-Press Hint) <!-- id: stage-2 -->
+- [x] Stage 3: Verification & Git Push Readiness <!-- id: stage-3 -->

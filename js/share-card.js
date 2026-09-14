@@ -75,6 +75,23 @@ class ShareCardGenerator {
         if (this.modal) this.modal.classList.remove('hidden');
     }
 
+    dataUrlToBlob(dataUrl) {
+        try {
+            const arr = dataUrl.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], { type: mime });
+        } catch (e) {
+            console.error('Error converting dataUrl to blob', e);
+            return null;
+        }
+    }
+
     generateCard({ grid, win, bet, balance }) {
         if (!this.canvas || !this.ctx) return;
 
@@ -297,30 +314,35 @@ class ShareCardGenerator {
         ctx.fillStyle = '#00f0ff';
         ctx.fillText('cl0rex1.github.io/kazik  •  CYBER VEGAS 777', w / 2, 535);
 
-        // Convert to dataUrl and Blob
+        // Convert to dataUrl and Blob synchronously
         this.currentDataUrl = this.canvas.toDataURL('image/png');
+        this.currentBlob = this.dataUrlToBlob(this.currentDataUrl);
+
         if (this.previewImg) {
             this.previewImg.src = this.currentDataUrl;
         }
-
-        this.canvas.toBlob((blob) => {
-            this.currentBlob = blob;
-        }, 'image/png');
     }
 
     async shareNative() {
+        if (!this.currentBlob && this.currentDataUrl) {
+            this.currentBlob = this.dataUrlToBlob(this.currentDataUrl);
+        }
         if (!this.currentBlob) return;
 
-        const file = new File([this.currentBlob], 'cyber-vegas-win.png', { type: 'image/png' });
+        const file = new File([this.currentBlob], 'cyber-vegas-win.png', {
+            type: 'image/png',
+            lastModified: Date.now()
+        });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
             try {
+                // CRITICAL FIX: DO NOT pass 'text'!
+                // In Telegram & WhatsApp, passing 'text' overrides the image and sends only text!
+                // Passing strictly 'files: [file]' forces the app to open the photo attachment sender!
                 await navigator.share({
-                    title: 'Мой занос в Cyber Vegas 777!',
-                    text: 'Смотри, какой куш я только что сорвал в Cyber Vegas 777! 🎰 cl0rex1.github.io/kazik',
                     files: [file]
                 });
-                this.showToast('Успешно отправлено!');
+                this.showToast('Картинка успешно отправлена!');
             } catch (err) {
                 if (err.name !== 'AbortError') {
                     this.downloadPng();
@@ -343,6 +365,9 @@ class ShareCardGenerator {
     }
 
     async copyToClipboard() {
+        if (!this.currentBlob && this.currentDataUrl) {
+            this.currentBlob = this.dataUrlToBlob(this.currentDataUrl);
+        }
         if (!this.currentBlob) return;
 
         try {
