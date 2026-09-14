@@ -549,7 +549,26 @@ class CasinoApp {
     }
 }
 
-// Instantiate on DOM load
-window.addEventListener('DOMContentLoaded', () => {
-    window.app = new CasinoApp();
-});
+// Safe instantiation whether loaded synchronously or asynchronously
+function initCasinoApp() {
+    if (!window.app) {
+        window.app = new CasinoApp();
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCasinoApp);
+} else {
+    initCasinoApp();
+}
+
+// Global user interaction handler to wake up Web Audio API on mobile
+const unlockAudioOnTouch = () => {
+    if (window.casinoAudio) {
+        window.casinoAudio.init();
+    }
+    document.removeEventListener('pointerdown', unlockAudioOnTouch);
+    document.removeEventListener('keydown', unlockAudioOnTouch);
+};
+document.addEventListener('pointerdown', unlockAudioOnTouch, { passive: true });
+document.addEventListener('keydown', unlockAudioOnTouch, { passive: true });

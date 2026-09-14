@@ -56,8 +56,8 @@ body {
 /* App Main Container */
 .casino-app-container {
     width: 100%;
-    max-width: 1150px;
-    padding: 12px 20px;
+    max-width: 540px;
+    padding: 10px 14px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -483,20 +483,44 @@ body {
     to { opacity: 1; }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
+    .casino-app-container {
+        padding: 6px 8px;
+    }
     .casino-header {
-        padding: 6px 12px;
+        padding: 6px 8px;
+        margin-bottom: 8px;
     }
     .neon-title {
-        font-size: 1.25rem;
+        font-size: 1.15rem;
+    }
+    .neon-sub {
+        font-size: 0.55rem;
+        letter-spacing: 3px;
+    }
+    .pill-btn {
+        padding: 6px 10px;
+        font-size: 0.8rem;
     }
     .pill-btn .label {
         display: none;
     }
     .jackpots-bar {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1.3fr;
+        gap: 6px;
+        margin-bottom: 10px;
     }
-    .jackpot-card.grand {
-        grid-column: span 2;
+    .jackpot-card {
+        padding: 6px 4px;
+    }
+    .jp-label {
+        font-size: 0.55rem;
+        letter-spacing: 1px;
+    }
+    .jp-amount {
+        font-size: 0.85rem;
+    }
+    .jackpot-card.grand .jp-amount {
+        font-size: 0.95rem;
     }
 }
