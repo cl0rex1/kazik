@@ -205,10 +205,16 @@ class BlackjackGame {
     }
 
     async startRound() {
+        if (this.gameState === 'DEALING' || this.gameState === 'PLAYER_TURN' || this.gameState === 'DEALER_TURN') {
+            return;
+        }
+
         const bal = this.getBalance();
         if (bal < this.currentBet) {
             this.setStatus('НЕДОСТАТОЧНО СРЕДСТВ! ПОПОЛНИ БАЛАНС В БАНКОМАТЕ', 'loss');
-            if (window.casinoAudio) window.casinoAudio.playLoseSound();
+            if (window.casinoAudio && typeof window.casinoAudio.playLoseSound === 'function') {
+                window.casinoAudio.playLoseSound();
+            }
             return;
         }
 
@@ -216,6 +222,11 @@ class BlackjackGame {
         this.activeBet = this.currentBet;
         this.gameState = 'DEALING';
         this.hideStatus();
+
+        if (this.dom.dealBtn) {
+            this.dom.dealBtn.disabled = true;
+            this.dom.dealBtn.textContent = '⚡ РАЗДАЧА КАРТ... ⚡';
+        }
 
         this.playerHand = [];
         this.dealerHand = [];
@@ -426,74 +437,95 @@ class BlackjackGame {
         this.gameState = 'ROUND_OVER';
         this.disableActions(true);
 
-        let winAmount = 0;
-        const currentBal = this.getBalance();
+        try {
+            let winAmount = 0;
+            const currentBal = this.getBalance();
 
-        switch (outcome) {
-            case 'BLACKJACK': {
-                // 3:2 payout: bet + 1.5 * bet
-                winAmount = this.activeBet + Math.floor(this.activeBet * 1.5);
-                this.setBalance(currentBal + winAmount);
-                this.setStatus(`💥 БЛЭКДЖЕК! ВЫИГРЫШ 3:2: +$${winAmount.toLocaleString()} 💥`, 'bj');
-                if (window.casinoAudio) window.casinoAudio.playJackpotWin();
-                if (window.particleEngine) {
-                    window.particleEngine.burstCoins(50);
-                    window.particleEngine.burstFireworks(60);
+            switch (outcome) {
+                case 'BLACKJACK': {
+                    winAmount = this.activeBet + Math.floor(this.activeBet * 1.5);
+                    this.setBalance(currentBal + winAmount);
+                    this.setStatus(`💥 БЛЭКДЖЕК! ВЫИГРЫШ 3:2: +$${winAmount.toLocaleString()} 💥`, 'bj');
+                    if (window.casinoAudio && typeof window.casinoAudio.playJackpotWin === 'function') {
+                        window.casinoAudio.playJackpotWin();
+                    }
+                    if (window.particleEngine) {
+                        window.particleEngine.burstCoins(50);
+                        window.particleEngine.burstFireworks(60);
+                    }
+                    if (window.celebrations) {
+                        window.celebrations.celebrate('big', winAmount);
+                    }
+                    break;
                 }
-                if (window.celebrations) {
-                    window.celebrations.celebrate('big', winAmount);
+                case 'DEALER_BUST': {
+                    winAmount = this.activeBet * 2;
+                    this.setBalance(currentBal + winAmount);
+                    this.setStatus(`🎉 ДИЛЕР ПЕРЕБРАЛ! ВЫИГРЫШ: +$${winAmount.toLocaleString()} 🎉`, 'win');
+                    if (window.casinoAudio && typeof window.casinoAudio.playWinChime === 'function') {
+                        window.casinoAudio.playWinChime();
+                    }
+                    if (window.particleEngine) window.particleEngine.burstCoins(25);
+                    break;
                 }
-                break;
+                case 'WIN': {
+                    winAmount = this.activeBet * 2;
+                    this.setBalance(currentBal + winAmount);
+                    this.setStatus(`🏆 ВЫ ВЫИГРАЛИ! ВЫПЛАТА: +$${winAmount.toLocaleString()} 🏆`, 'win');
+                    if (window.casinoAudio && typeof window.casinoAudio.playWinChime === 'function') {
+                        window.casinoAudio.playWinChime();
+                    }
+                    if (window.particleEngine) window.particleEngine.burstCoins(25);
+                    break;
+                }
+                case 'PUSH':
+                case 'PUSH_BJ': {
+                    winAmount = this.activeBet;
+                    this.setBalance(currentBal + winAmount);
+                    this.setStatus('🤝 НИЧЬЯ (PUSH)! СТАВКА ВОЗВРАЩЕНА 🤝', 'push');
+                    if (window.casinoAudio && typeof window.casinoAudio.playCreditTick === 'function') {
+                        window.casinoAudio.playCreditTick();
+                    }
+                    break;
+                }
+                case 'BUST': {
+                    this.setStatus(`💀 ПЕРЕБОР (${this.calculateScore(this.playerHand).total})! ВЫ ПРОИГРАЛИ -$${this.activeBet.toLocaleString()}`, 'loss');
+                    if (window.casinoAudio && typeof window.casinoAudio.playLoseSound === 'function') {
+                        window.casinoAudio.playLoseSound();
+                    }
+                    break;
+                }
+                case 'DEALER_BJ': {
+                    this.setStatus(`💀 У ДИЛЕРА БЛЭКДЖЕК! ВЫ ПРОИГРАЛИ -$${this.activeBet.toLocaleString()}`, 'loss');
+                    if (window.casinoAudio && typeof window.casinoAudio.playLoseSound === 'function') {
+                        window.casinoAudio.playLoseSound();
+                    }
+                    break;
+                }
+                case 'LOSE':
+                default: {
+                    this.setStatus(`ДИЛЕР ВЫИГРАЛ (${this.calculateScore(this.dealerHand).total} ПРОТИВ ${this.calculateScore(this.playerHand).total}) -$${this.activeBet.toLocaleString()}`, 'loss');
+                    if (window.casinoAudio && typeof window.casinoAudio.playLoseSound === 'function') {
+                        window.casinoAudio.playLoseSound();
+                    }
+                    break;
+                }
             }
-            case 'DEALER_BUST': {
-                winAmount = this.activeBet * 2;
-                this.setBalance(currentBal + winAmount);
-                this.setStatus(`🎉 ДИЛЕР ПЕРЕБРАЛ! ВЫИГРЫШ: +$${winAmount.toLocaleString()} 🎉`, 'win');
-                if (window.casinoAudio) window.casinoAudio.playWinChime();
-                if (window.particleEngine) window.particleEngine.burstCoins(25);
-                break;
+
+            // Track stats in user profile
+            if (window.authManager) {
+                window.authManager.trackBlackjack(winAmount > this.activeBet ? winAmount - this.activeBet : 0);
             }
-            case 'WIN': {
-                winAmount = this.activeBet * 2;
-                this.setBalance(currentBal + winAmount);
-                this.setStatus(`🏆 ВЫ ВЫИГРАЛИ! ВЫПЛАТА: +$${winAmount.toLocaleString()} 🏆`, 'win');
-                if (window.casinoAudio) window.casinoAudio.playWinChime();
-                if (window.particleEngine) window.particleEngine.burstCoins(25);
-                break;
-            }
-            case 'PUSH':
-            case 'PUSH_BJ': {
-                winAmount = this.activeBet;
-                this.setBalance(currentBal + winAmount);
-                this.setStatus('🤝 НИЧЬЯ (PUSH)! СТАВКА ВОЗВРАЩЕНА 🤝', 'push');
-                if (window.casinoAudio) window.casinoAudio.playCreditTick();
-                break;
-            }
-            case 'BUST': {
-                this.setStatus(`💀 ПЕРЕБОР (${this.calculateScore(this.playerHand).total})! ВЫ ПРОИГРАЛИ -$${this.activeBet.toLocaleString()}`, 'loss');
-                if (window.casinoAudio) window.casinoAudio.playLoseSound();
-                break;
-            }
-            case 'DEALER_BJ': {
-                this.setStatus(`💀 У ДИЛЕРА БЛЭКДЖЕК! ВЫ ПРОИГРАЛИ -$${this.activeBet.toLocaleString()}`, 'loss');
-                if (window.casinoAudio) window.casinoAudio.playLoseSound();
-                break;
-            }
-            case 'LOSE':
-            default: {
-                this.setStatus(`ДИЛЕР ВЫИГРАЛ (${this.calculateScore(this.dealerHand).total} ПРОТИВ ${this.calculateScore(this.playerHand).total}) -$${this.activeBet.toLocaleString()}`, 'loss');
-                if (window.casinoAudio) window.casinoAudio.playLoseSound();
-                break;
+        } catch (err) {
+            console.error('Error during endRound:', err);
+        } finally {
+            if (this.dom.betControlsGroup) this.dom.betControlsGroup.classList.remove('hidden');
+            if (this.dom.actionControlsGroup) this.dom.actionControlsGroup.classList.add('hidden');
+            if (this.dom.dealBtn) {
+                this.dom.dealBtn.disabled = false;
+                this.dom.dealBtn.textContent = '⚡ СЛЕДУЮЩИЙ РАУНД ⚡';
             }
         }
-
-        // Track stats in user profile
-        if (window.authManager) {
-            window.authManager.trackBlackjack(winAmount > this.activeBet ? winAmount - this.activeBet : 0);
-        }
-
-        if (this.dom.betControlsGroup) this.dom.betControlsGroup.classList.remove('hidden');
-        if (this.dom.actionControlsGroup) this.dom.actionControlsGroup.classList.add('hidden');
     }
 }
 

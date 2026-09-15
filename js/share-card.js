@@ -65,13 +65,49 @@ class ShareCardGenerator {
     openWithCurrentState() {
         if (!window.app) return;
         const app = window.app;
-        const lastWin = parseFloat(app.dom.win.textContent.replace(/[^0-9.]/g, '')) || 0;
+        const mode = app.currentMode || 'slots';
+        let win = 0;
+        let bet = 0;
+        let bjData = null;
+
+        if (mode === 'blackjack' && window.blackjackGame) {
+            const bj = window.blackjackGame;
+            bet = bj.activeBet || bj.currentBet;
+            const pScore = bj.calculateScore(bj.playerHand);
+            const dScore = bj.calculateScore(bj.dealerHand);
+            const statusText = (bj.dom.statusText && bj.dom.statusText.textContent) ? bj.dom.statusText.textContent : 'РАУНД 21';
+            const statusClass = (bj.dom.statusBanner && bj.dom.statusBanner.className) ? bj.dom.statusBanner.className : '';
+
+            if (statusClass.includes('bj')) {
+                win = Math.floor(bet * 1.5);
+            } else if (statusClass.includes('win')) {
+                win = bet;
+            } else {
+                win = 0;
+            }
+
+            bjData = {
+                dealerHand: bj.dealerHand || [],
+                dealerScore: dScore.total,
+                playerHand: bj.playerHand || [],
+                playerScore: pScore.total,
+                statusText: statusText,
+                statusClass: statusClass
+            };
+        } else {
+            win = parseFloat(app.dom.win.textContent.replace(/[^0-9.]/g, '')) || 0;
+            bet = app.getCurrentBet();
+        }
+
         this.generateCard({
+            mode: mode,
             grid: app.currentGrid,
-            win: lastWin,
-            bet: app.getCurrentBet(),
-            balance: app.balance
+            win: win,
+            bet: bet,
+            balance: app.balance,
+            bjData: bjData
         });
+
         if (this.modal) this.modal.classList.remove('hidden');
     }
 
@@ -92,11 +128,11 @@ class ShareCardGenerator {
         }
     }
 
-    generateCard({ grid, win, bet, balance }) {
+    generateCard({ mode = 'slots', grid, win, bet, balance, bjData }) {
         if (!this.canvas || !this.ctx) return;
 
-        const w = 920;
-        const h = 580;
+        const w = 960;
+        const h = 590;
         this.canvas.width = w;
         this.canvas.height = h;
         const ctx = this.ctx;
@@ -109,115 +145,265 @@ class ShareCardGenerator {
             }
         };
 
-        // 1. Dark Neon Background Gradient
+        // User profile data
+        const user = (window.authManager && window.authManager.user) ? window.authManager.user : {
+            username: 'Игрок',
+            avatar: '🕶️'
+        };
+        const rank = (window.authManager) ? window.authManager.getVipRank(balance) : { title: 'НОВИЧОК', color: '#a0a0c0' };
+
+        // 1. Dark Cyber Gradient Background
         const bgGrad = ctx.createLinearGradient(0, 0, w, h);
-        bgGrad.addColorStop(0, '#090716');
-        bgGrad.addColorStop(0.5, '#161036');
-        bgGrad.addColorStop(1, '#060512');
+        bgGrad.addColorStop(0, '#060513');
+        bgGrad.addColorStop(0.45, '#120d2c');
+        bgGrad.addColorStop(1, '#050410');
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, w, h);
 
         // Neon Radial Flares
-        const glow1 = ctx.createRadialGradient(180, 120, 20, 180, 120, 260);
-        glow1.addColorStop(0, 'rgba(255, 0, 127, 0.32)');
+        const glow1 = ctx.createRadialGradient(160, 100, 10, 160, 100, 260);
+        glow1.addColorStop(0, 'rgba(255, 0, 127, 0.28)');
         glow1.addColorStop(1, 'transparent');
         ctx.fillStyle = glow1;
         ctx.fillRect(0, 0, w, h);
 
-        const glow2 = ctx.createRadialGradient(740, 460, 20, 740, 460, 320);
-        glow2.addColorStop(0, 'rgba(0, 240, 255, 0.3)');
+        const glow2 = ctx.createRadialGradient(780, 480, 20, 780, 480, 320);
+        glow2.addColorStop(0, 'rgba(0, 240, 255, 0.25)');
         glow2.addColorStop(1, 'transparent');
         ctx.fillStyle = glow2;
         ctx.fillRect(0, 0, w, h);
 
-        // Outer Glowing Neon Machine Border
+        // Outer Double Glowing Neon Bezel
         ctx.strokeStyle = '#00f0ff';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 3.5;
         ctx.shadowColor = '#00f0ff';
-        ctx.shadowBlur = 18;
+        ctx.shadowBlur = 16;
         ctx.strokeRect(14, 14, w - 28, h - 28);
+        ctx.strokeStyle = 'rgba(255, 0, 127, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(20, 20, w - 40, h - 40);
         ctx.shadowBlur = 0;
 
-        // 2. Header Title
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#ffb700';
-        ctx.font = 'bold 15px "Orbitron", sans-serif';
-        ctx.letterSpacing = '4px';
-        ctx.fillText('CLASSIC 3-REEL VEGAS SLOTS', w / 2, 52);
+        // 2. Header: Profile Badge (Left) & Brand (Right)
+        // Profile Card Pill
+        const profX = 35;
+        const profY = 28;
+        const profW = 270;
+        const profH = 58;
 
-        ctx.font = '900 36px "Orbitron", sans-serif';
-        ctx.fillStyle = '#ffffff';
-        ctx.shadowColor = '#ff007f';
-        ctx.shadowBlur = 18;
-        ctx.fillText('CYBER VEGAS 777', w / 2, 98);
-        ctx.shadowBlur = 0;
-
-        // 3. Reels Area (3 Columns x 3 Rows)
-        const reelBoxW = 440;
-        const reelBoxH = 340;
-        const reelBoxX = 50;
-        const reelBoxY = 135;
-
-        // Reel Bezel Housing
-        ctx.fillStyle = '#0c0a1f';
-        ctx.strokeStyle = '#2f2858';
-        ctx.lineWidth = 3;
+        ctx.fillStyle = 'rgba(20, 18, 45, 0.85)';
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.45)';
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        drawRoundRect(reelBoxX, reelBoxY, reelBoxW, reelBoxH, 18);
+        drawRoundRect(profX, profY, profW, profH, 16);
         ctx.fill();
         ctx.stroke();
 
-        const cellW = (reelBoxW - 24) / 3;
-        const cellH = (reelBoxH - 24) / 3;
+        // Avatar
+        ctx.font = '32px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(user.avatar || '🕶️', profX + 34, profY + profH / 2);
 
-        for (let col = 0; col < 3; col++) {
-            for (let row = 0; row < 3; row++) {
-                const cellX = reelBoxX + 12 + col * cellW;
-                const cellY = reelBoxY + 12 + row * cellH;
+        // Name & Rank
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 16px "Orbitron", sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText((user.username || 'Игрок').slice(0, 14), profX + 70, profY + 24);
 
-                // Glowing tile card for each symbol
-                const cellGrad = ctx.createLinearGradient(cellX, cellY, cellX, cellY + cellH);
-                cellGrad.addColorStop(0, '#221a4f');
-                cellGrad.addColorStop(1, '#110d29');
-                ctx.fillStyle = cellGrad;
-                ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                drawRoundRect(cellX + 3, cellY + 3, cellW - 6, cellH - 6, 12);
-                ctx.fill();
-                ctx.stroke();
+        ctx.font = '800 11px "Orbitron", sans-serif';
+        ctx.fillStyle = rank.color || '#a0a0c0';
+        ctx.fillText(`★ ${rank.title || 'НОВИЧОК'}`, profX + 70, profY + 44);
 
-                // Draw Symbol
-                const sym = (grid && grid[col] && grid[col][row]) ? grid[col][row] : { id: 'seven', icon: '7️⃣', name: 'Семерка' };
-                
-                // Draw Emoji Icon
+        // Brand & Mode Subtitle (Right / Center)
+        ctx.textAlign = 'right';
+        ctx.font = 'bold 13px "Orbitron", sans-serif';
+        ctx.fillStyle = '#00f0ff';
+        ctx.letterSpacing = '2px';
+        ctx.fillText(mode === 'blackjack' ? '🃏 21 ОЧКО / CYBER BLACKJACK' : '🎰 CLASSIC 3-REEL VEGAS SLOTS', w - 40, 48);
+
+        ctx.font = '900 28px "Orbitron", sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#ff007f';
+        ctx.shadowBlur = 14;
+        ctx.fillText('CYBER VEGAS 777', w - 40, 78);
+        ctx.shadowBlur = 0;
+
+        // 3. Left Area: Slots Grid OR Blackjack Table Felt
+        const leftX = 35;
+        const leftY = 104;
+        const leftW = 490;
+        const leftH = 390;
+
+        if (mode === 'blackjack') {
+            // Cyber Table Felt
+            const feltGrad = ctx.createRadialGradient(leftX + leftW / 2, leftY + 120, 10, leftX + leftW / 2, leftY + 120, 260);
+            feltGrad.addColorStop(0, '#0d2822');
+            feltGrad.addColorStop(0.8, '#08171a');
+            feltGrad.addColorStop(1, '#040b0e');
+            ctx.fillStyle = feltGrad;
+            ctx.strokeStyle = 'rgba(0, 255, 136, 0.4)';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            drawRoundRect(leftX, leftY, leftW, leftH, 20);
+            ctx.fill();
+            ctx.stroke();
+
+            // Table banner
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 12px "Rajdhani", sans-serif';
+            ctx.letterSpacing = '2px';
+            ctx.fillStyle = '#00ff88';
+            ctx.fillText('★ BLACKJACK PAYS 3 TO 2 • DEALER STANDS ON 17 ★', leftX + leftW / 2, leftY + 26);
+
+            // Mini card drawer helper
+            const drawMiniCard = (cx, cy, card, isHidden) => {
+                const cw = 54;
+                const ch = 78;
                 ctx.save();
-                ctx.fillStyle = '#ffffff';
-                ctx.globalAlpha = 1.0;
-                ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
-                ctx.shadowBlur = 12;
-                ctx.font = '52px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(sym.icon, cellX + cellW / 2, cellY + cellH / 2 - 10);
-                ctx.restore();
+                if (isHidden) {
+                    ctx.fillStyle = '#0c1322';
+                    ctx.strokeStyle = '#00f0ff';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    drawRoundRect(cx, cy, cw, ch, 6);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.fillStyle = '#00f0ff';
+                    ctx.font = '22px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('♠', cx + cw / 2, cy + ch / 2);
+                } else {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.strokeStyle = '#d0d4dc';
+                    ctx.lineWidth = 1.5;
+                    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                    ctx.shadowBlur = 8;
+                    ctx.beginPath();
+                    drawRoundRect(cx, cy, cw, ch, 6);
+                    ctx.fill();
+                    ctx.stroke();
 
-                // Draw Symbol Name in neon text
-                ctx.save();
-                ctx.font = 'bold 12px "Orbitron", sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = sym.isWild ? '#ff007f' : sym.isScatter ? '#00f0ff' : '#ffd700';
-                ctx.fillText(sym.name.toUpperCase(), cellX + cellW / 2, cellY + cellH / 2 + 30);
+                    const isRed = (card.suit === 'hearts' || card.suit === 'diamonds' || card.color === 'pink');
+                    ctx.fillStyle = isRed ? '#e6005c' : '#0077b6';
+                    ctx.font = 'bold 15px "Rajdhani", sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(card.rank, cx + 5, cy + 4);
+
+                    ctx.font = '12px sans-serif';
+                    ctx.fillText(card.symbol, cx + 5, cy + 19);
+
+                    ctx.font = '24px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(card.symbol, cx + cw / 2, cy + ch / 2 + 8);
+                }
                 ctx.restore();
+            };
+
+            // Dealer Section
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 14px "Orbitron", sans-serif';
+            ctx.fillStyle = '#a0a0c0';
+            ctx.fillText(`ДИЛЕР  [ ${bjData ? bjData.dealerScore : 0} ]`, leftX + leftW / 2, leftY + 54);
+
+            const dCards = (bjData && bjData.dealerHand && bjData.dealerHand.length) ? bjData.dealerHand : [
+                { rank: 'K', symbol: '♠', suit: 'spades', color: 'cyan' },
+                { rank: '8', symbol: '♦', suit: 'diamonds', color: 'pink' }
+            ];
+            const dStartX = leftX + (leftW - (dCards.length * 42 + 16)) / 2;
+            dCards.forEach((c, i) => {
+                drawMiniCard(dStartX + i * 42, leftY + 66, c, c.isHidden);
+            });
+
+            // Center Outcome Banner
+            const bannerY = leftY + 164;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            drawRoundRect(leftX + 30, bannerY, leftW - 60, 36, 10);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 13px "Orbitron", sans-serif';
+            ctx.fillStyle = '#ffd700';
+            ctx.textBaseline = 'middle';
+            const statusLabel = (bjData && bjData.statusText) ? bjData.statusText : 'РАУНД ЗАВЕРШЕН';
+            ctx.fillText(statusLabel.slice(0, 38), leftX + leftW / 2, bannerY + 18);
+
+            // Player Section
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 14px "Orbitron", sans-serif';
+            ctx.fillStyle = '#00f0ff';
+            ctx.fillText(`ВАША РУКА  [ ${bjData ? bjData.playerScore : 0} ]`, leftX + leftW / 2, leftY + 228);
+
+            const pCards = (bjData && bjData.playerHand && bjData.playerHand.length) ? bjData.playerHand : [
+                { rank: 'A', symbol: '♠', suit: 'spades', color: 'cyan' },
+                { rank: 'J', symbol: '♥', suit: 'hearts', color: 'pink' }
+            ];
+            const pStartX = leftX + (leftW - (pCards.length * 42 + 16)) / 2;
+            pCards.forEach((c, i) => {
+                drawMiniCard(pStartX + i * 42, leftY + 242, c, false);
+            });
+
+        } else {
+            // Classic Slots 3x3 Grid
+            ctx.fillStyle = '#0c0a22';
+            ctx.strokeStyle = '#322564';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            drawRoundRect(leftX, leftY, leftW, leftH, 18);
+            ctx.fill();
+            ctx.stroke();
+
+            const cellW = (leftW - 24) / 3;
+            const cellH = (leftH - 24) / 3;
+
+            for (let col = 0; col < 3; col++) {
+                for (let row = 0; row < 3; row++) {
+                    const cellX = leftX + 12 + col * cellW;
+                    const cellY = leftY + 12 + row * cellH;
+
+                    const cellGrad = ctx.createLinearGradient(cellX, cellY, cellX, cellY + cellH);
+                    cellGrad.addColorStop(0, '#221950');
+                    cellGrad.addColorStop(1, '#110c2a');
+                    ctx.fillStyle = cellGrad;
+                    ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    drawRoundRect(cellX + 3, cellY + 3, cellW - 6, cellH - 6, 12);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    const sym = (grid && grid[col] && grid[col][row]) ? grid[col][row] : { id: 'seven', icon: '7️⃣', name: 'Семерка' };
+
+                    ctx.save();
+                    ctx.font = '54px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(sym.icon, cellX + cellW / 2, cellY + cellH / 2 - 10);
+                    ctx.restore();
+
+                    ctx.save();
+                    ctx.font = 'bold 12px "Orbitron", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = sym.isWild ? '#ff007f' : sym.isScatter ? '#00f0ff' : '#ffd700';
+                    ctx.fillText(sym.name.toUpperCase(), cellX + cellW / 2, cellY + cellH / 2 + 34);
+                    ctx.restore();
+                }
             }
         }
 
-        // 4. Stats & Win Panel (Right side)
-        const statsX = 520;
-        const statsY = 135;
-        const statsW = 350;
-        const statsH = 340;
+        // 4. Right Area: Stats & Win Showcase
+        const rightX = 550;
+        const rightY = 104;
+        const rightW = 375;
+        const rightH = 390;
 
         ctx.fillStyle = '#0f0c24';
         ctx.strokeStyle = '#ffd700';
@@ -225,43 +411,43 @@ class ShareCardGenerator {
         ctx.shadowColor = '#ffd700';
         ctx.shadowBlur = 14;
         ctx.beginPath();
-        drawRoundRect(statsX, statsY, statsW, statsH, 18);
+        drawRoundRect(rightX, rightY, rightW, rightH, 18);
         ctx.fill();
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // Big Win Label & Amount
+        // Big Win Heading
         ctx.textAlign = 'center';
         ctx.font = 'bold 15px "Orbitron", sans-serif';
         ctx.fillStyle = '#00f0ff';
-        ctx.letterSpacing = '1px';
-        ctx.fillText('ВЫИГРЫШ В РАУНДЕ', statsX + statsW / 2, statsY + 44);
+        ctx.letterSpacing = '1.5px';
+        ctx.fillText('РЕЗУЛЬТАТ РАУНДА', rightX + rightW / 2, rightY + 44);
 
-        ctx.font = '900 40px "Orbitron", sans-serif';
+        ctx.font = '900 42px "Orbitron", sans-serif';
         ctx.fillStyle = '#ffd700';
         ctx.shadowColor = '#ffea70';
-        ctx.shadowBlur = 20;
+        ctx.shadowBlur = 18;
         const formattedWin = '$' + Number(win).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        ctx.fillText(formattedWin, statsX + statsW / 2, statsY + 98);
+        ctx.fillText(formattedWin, rightX + rightW / 2, rightY + 102);
         ctx.shadowBlur = 0;
 
         // Divider
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(statsX + 20, statsY + 130);
-        ctx.lineTo(statsX + statsW - 20, statsY + 130);
+        ctx.moveTo(rightX + 24, rightY + 136);
+        ctx.lineTo(rightX + rightW - 24, rightY + 136);
         ctx.stroke();
 
-        // 2 Dedicated Cards for Bet & Balance (Eliminates any horizontal collision!)
-        const cardW = 145;
-        const cardH = 80;
-        const cardY = statsY + 148;
+        // 2 Cards for Bet & Balance
+        const cardW = 154;
+        const cardH = 82;
+        const cardY = rightY + 154;
 
         // Bet Card (Left)
-        const betCardX = statsX + 20;
+        const betCardX = rightX + 24;
         ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         drawRoundRect(betCardX, cardY, cardW, cardH, 12);
@@ -274,14 +460,14 @@ class ShareCardGenerator {
         ctx.fillStyle = '#8b88ad';
         ctx.fillText('СТАВКА', betCardX + cardW / 2, cardY + 26);
 
-        ctx.font = 'bold 20px "Orbitron", sans-serif';
+        ctx.font = 'bold 21px "Orbitron", sans-serif';
         ctx.fillStyle = '#ffffff';
-        ctx.fillText('$' + Number(bet).toFixed(2), betCardX + cardW / 2, cardY + 56);
+        ctx.fillText('$' + Number(bet).toFixed(2), betCardX + cardW / 2, cardY + 58);
 
         // Balance Card (Right)
-        const balCardX = statsX + statsW - cardW - 20;
-        ctx.fillStyle = 'rgba(0, 255, 136, 0.04)';
-        ctx.strokeStyle = 'rgba(0, 255, 136, 0.35)';
+        const balCardX = rightX + rightW - cardW - 24;
+        ctx.fillStyle = 'rgba(0, 255, 136, 0.05)';
+        ctx.strokeStyle = 'rgba(0, 255, 136, 0.4)';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         drawRoundRect(balCardX, cardY, cardW, cardH, 12);
@@ -297,22 +483,39 @@ class ShareCardGenerator {
         ctx.font = 'bold 19px "Orbitron", sans-serif';
         ctx.fillStyle = '#00ff88';
         const formattedBal = '$' + Number(balance).toLocaleString('en-US', { minimumFractionDigits: 2 });
-        ctx.fillText(formattedBal, balCardX + cardW / 2, cardY + 56);
+        ctx.fillText(formattedBal, balCardX + cardW / 2, cardY + 58);
 
-        // Date stamp badge
+        // Total Statistics Pill
+        const totalWon = (user && user.totalWon) ? user.totalWon : win;
+        const totalPillY = rightY + 258;
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.08)';
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        drawRoundRect(rightX + 24, totalPillY, rightW - 48, 42, 10);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 13px "Rajdhani", sans-serif';
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText(`🏆 ВСЕГО ВЫИГРАНО: $${Number(totalWon).toLocaleString('en-US', { minimumFractionDigits: 2 })}`, rightX + rightW / 2, totalPillY + 26);
+
+        // Date stamp
         const now = new Date();
         const dateStr = now.toLocaleDateString('ru-RU') + ' ' + now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
         ctx.textAlign = 'center';
-        ctx.font = 'bold 14px "Rajdhani", sans-serif';
+        ctx.font = 'bold 13px "Rajdhani", sans-serif';
         ctx.letterSpacing = '1px';
         ctx.fillStyle = '#7a76a2';
-        ctx.fillText(`● ПРОВЕРЕНО • ${dateStr}`, statsX + statsW / 2, statsY + 288);
+        ctx.fillText(`● ЧЕСТНАЯ ИГРА • ${dateStr}`, rightX + rightW / 2, rightY + 346);
 
-        // 5. Official Requested Footer Watermark Link: cl0rex1.github.io/kazik
+        // 5. Official Footer Link Watermark
+        ctx.textAlign = 'center';
         ctx.font = 'bold 14px "Orbitron", sans-serif';
         ctx.letterSpacing = '2px';
         ctx.fillStyle = '#00f0ff';
-        ctx.fillText('cl0rex1.github.io/kazik  •  CYBER VEGAS 777', w / 2, 535);
+        ctx.fillText('cl0rex1.github.io/kazik  •  CYBER VEGAS 777  •  MEGA UPDATE 2.1', w / 2, 545);
 
         // Convert to dataUrl and Blob synchronously
         this.currentDataUrl = this.canvas.toDataURL('image/png');

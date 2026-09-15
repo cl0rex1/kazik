@@ -6,8 +6,8 @@
 class CasinoApp {
     constructor() {
         const saved = parseFloat(localStorage.getItem('casino_balance'));
-        this.balance = (!isNaN(saved) && saved > 0) ? saved : 5000;
-        this.bets = [5, 10, 25, 50, 100, 250, 500, 1000, 2500];
+        this.balance = (!isNaN(saved) && saved > 0 && saved !== 10000) ? saved : 5000;
+        this.bets = [5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000];
         this.betIndex = 2; // Default $25 (5 lines x $5)
         this.isSpinning = false;
         this.isTurbo = false;
@@ -53,10 +53,20 @@ class CasinoApp {
             modeSlotsBtn: document.getElementById('modeSlotsBtn'),
             modeBlackjackBtn: document.getElementById('modeBlackjackBtn'),
             slotsModeView: document.getElementById('slotsModeView'),
-            blackjackModeView: document.getElementById('blackjackModeView')
+            blackjackModeView: document.getElementById('blackjackModeView'),
+            adModal: document.getElementById('adVideoModal'),
+            adVideo: document.getElementById('adVideoPlayer'),
+            adOverlay: document.getElementById('adVideoOverlay'),
+            adPlayPromptBtn: document.getElementById('adPlayPromptBtn'),
+            adRewardTitle: document.getElementById('adRewardTitle'),
+            adStatusText: document.getElementById('adStatusText'),
+            adTimeRemaining: document.getElementById('adTimeRemaining'),
+            adClaimRewardBtn: document.getElementById('adClaimRewardBtn'),
+            adCloseBtn: document.getElementById('adCloseBtn')
         };
 
         this.currentMode = 'slots';
+        this.pendingAdReward = 0;
 
         // Current 3x3 visible grid of symbols
         this.currentGrid = [];
@@ -71,6 +81,7 @@ class CasinoApp {
         this.updateSoundIcon();
         this.startJackpotTicker();
         this.setupModeSwitcher();
+        this.setupAdSystem();
     }
 
     setupModeSwitcher() {
@@ -290,18 +301,116 @@ class CasinoApp {
             });
         }
 
-        // ATM claim buttons
+    }
+
+    setupAdSystem() {
         const claimBtns = document.querySelectorAll('.atm-claim-btn');
         claimBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const amount = parseFloat(e.target.dataset.amount) || 1000;
-                this.balance += amount;
-                this.updateDisplays();
-                window.casinoAudio.playAtmCash();
-                window.particleEngine.burstCoins(40);
-                this.dom.atmModal.classList.add('hidden');
+                const amount = parseFloat(e.currentTarget.dataset.amount) || 5000;
+                this.startAdPlayback(amount);
             });
         });
+
+        if (this.dom.adPlayPromptBtn && this.dom.adVideo) {
+            this.dom.adPlayPromptBtn.addEventListener('click', () => {
+                if (this.dom.adOverlay) this.dom.adOverlay.classList.add('hidden');
+                this.dom.adVideo.play().catch(err => console.log('Video play error:', err));
+            });
+        }
+
+        if (this.dom.adCloseBtn) {
+            this.dom.adCloseBtn.addEventListener('click', () => {
+                this.closeAdModal();
+            });
+        }
+
+        if (this.dom.adClaimRewardBtn) {
+            this.dom.adClaimRewardBtn.addEventListener('click', () => {
+                this.claimAdReward();
+            });
+        }
+
+        if (this.dom.adVideo) {
+            this.dom.adVideo.addEventListener('timeupdate', () => {
+                if (!this.dom.adVideo.duration) return;
+                const rem = Math.max(0, this.dom.adVideo.duration - this.dom.adVideo.currentTime);
+                const secs = Math.ceil(rem);
+                if (this.dom.adTimeRemaining) {
+                    this.dom.adTimeRemaining.textContent = `0:${secs < 10 ? '0' : ''}${secs}`;
+                }
+
+                if (rem <= 0.35) {
+                    this.onAdCompleted();
+                }
+            });
+
+            this.dom.adVideo.addEventListener('ended', () => {
+                this.onAdCompleted();
+            });
+        }
+    }
+
+    startAdPlayback(amount) {
+        this.pendingAdReward = amount;
+        if (this.dom.atmModal) this.dom.atmModal.classList.add('hidden');
+        if (!this.dom.adModal || !this.dom.adVideo) return;
+
+        if (this.dom.adRewardTitle) {
+            this.dom.adRewardTitle.textContent = `СМОТРИ РЕКЛАМУ И ЗАБЕРИ +$${amount.toLocaleString()}`;
+        }
+        if (this.dom.adStatusText) {
+            this.dom.adStatusText.textContent = 'Идет показ рекламы спонсора...';
+        }
+        if (this.dom.adClaimRewardBtn) {
+            this.dom.adClaimRewardBtn.disabled = true;
+            this.dom.adClaimRewardBtn.classList.remove('ready');
+            this.dom.adClaimRewardBtn.textContent = '⏳ ДОСМОТРИТЕ ДО КОНЦА';
+        }
+        if (this.dom.adOverlay) {
+            this.dom.adOverlay.classList.add('hidden');
+        }
+
+        this.dom.adModal.classList.remove('hidden');
+        this.dom.adVideo.currentTime = 0;
+        
+        const playPromise = this.dom.adVideo.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(() => {
+                if (this.dom.adOverlay) this.dom.adOverlay.classList.remove('hidden');
+            });
+        }
+    }
+
+    onAdCompleted() {
+        if (!this.dom.adClaimRewardBtn || this.dom.adClaimRewardBtn.classList.contains('ready')) return;
+        this.dom.adClaimRewardBtn.disabled = false;
+        this.dom.adClaimRewardBtn.classList.add('ready');
+        this.dom.adClaimRewardBtn.textContent = `⚡ ЗАБРАТЬ +$${this.pendingAdReward.toLocaleString()} ⚡`;
+        if (this.dom.adStatusText) {
+            this.dom.adStatusText.textContent = '✅ Реклама просмотрена! Награда готова!';
+        }
+        if (this.dom.adTimeRemaining) {
+            this.dom.adTimeRemaining.textContent = '0:00';
+        }
+    }
+
+    claimAdReward() {
+        if (!this.dom.adClaimRewardBtn || this.dom.adClaimRewardBtn.disabled) return;
+        this.balance += this.pendingAdReward;
+        this.updateDisplays();
+        if (window.casinoAudio) window.casinoAudio.playAtmCash();
+        if (window.particleEngine) window.particleEngine.burstCoins(50);
+        this.closeAdModal();
+    }
+
+    closeAdModal() {
+        if (this.dom.adVideo) {
+            this.dom.adVideo.pause();
+        }
+        if (this.dom.adModal) {
+            this.dom.adModal.classList.add('hidden');
+        }
     }
 
     updateSoundIcon(isMuted = window.casinoAudio.isMuted) {

@@ -803,3 +803,141 @@ body {
         font-size: 0.95rem;
     }
 }
+
+/* Video Ad Modal (musordrop.mp4) */
+.ad-card {
+    max-width: 600px;
+    border-color: var(--neon-gold);
+    box-shadow: 0 0 50px rgba(255, 183, 0, 0.4), inset 0 0 20px rgba(0, 0, 0, 0.9);
+    padding: 22px 20px;
+    text-align: center;
+}
+.ad-header {
+    margin-bottom: 14px;
+}
+.ad-badge {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--neon-gold);
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(255, 183, 0, 0.6);
+    margin-bottom: 6px;
+}
+.ad-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: #fff;
+    margin: 0;
+}
+.ad-video-container {
+    position: relative;
+    width: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #000;
+    border: 2px solid rgba(0, 240, 255, 0.4);
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.9);
+    margin-bottom: 14px;
+    max-height: 340px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ad-video-player {
+    width: 100%;
+    height: auto;
+    max-height: 340px;
+    display: block;
+    object-fit: contain;
+}
+.ad-video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
+.ad-play-prompt-btn {
+    background: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-cyan) 100%);
+    border: 2px solid #fff;
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.1rem;
+    padding: 14px 28px;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.6);
+    transition: transform 0.2s;
+}
+.ad-play-prompt-btn:hover {
+    transform: scale(1.06);
+}
+.ad-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    color: #a0a0c0;
+}
+.ad-timer {
+    font-family: var(--font-display);
+    color: var(--neon-gold);
+    font-weight: 800;
+    font-size: 1rem;
+}
+.ad-actions-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+.ad-claim-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: #a0a0c0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 14px 20px;
+    border-radius: 12px;
+    cursor: not-allowed;
+    transition: all 0.25s ease;
+}
+.ad-claim-btn.ready {
+    background: linear-gradient(135deg, #00ff88 0%, #00b4d8 100%);
+    border-color: #fff;
+    color: #030812;
+    cursor: pointer;
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.8);
+    animation: bannerPulse 1s infinite alternate;
+}
+.ad-claim-btn.ready:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 35px rgba(0, 255, 136, 1);
+}
+.ad-cancel-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    color: #a0a0c0;
+    font-family: var(--font-ui);
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 12px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.ad-cancel-btn:hover {
+    background: rgba(255, 0, 90, 0.2);
+    border-color: #ff005a;
+    color: #fff;
+}

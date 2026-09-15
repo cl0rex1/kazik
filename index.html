@@ -224,6 +224,8 @@
                             <button class="bj-chip-btn chip-100" data-value="100">+100</button>
                             <button class="bj-chip-btn chip-250" data-value="250">+250</button>
                             <button class="bj-chip-btn chip-500" data-value="500">+500</button>
+                            <button class="bj-chip-btn chip-1000" data-value="1000">+1K</button>
+                            <button class="bj-chip-btn chip-5000" data-value="5000">+5K</button>
                         </div>
                         <div class="bj-bet-summary-bar">
                             <span class="bj-bet-label">СТАВКА:</span>
@@ -427,15 +429,41 @@
     <div id="atmModal" class="modal-backdrop hidden">
         <div class="modal-card atm-card">
             <div class="modal-header">
-                <h2>БАНКОМАТ / БОНУСНЫЕ ФИШКИ</h2>
+                <h2>БАНКОМАТ / БОНУСНЫЙ КЭШ</h2>
                 <button id="closeAtmBtn" class="modal-close-btn">&times;</button>
             </div>
             <div class="modal-body text-center">
-                <p class="atm-desc">Закончились кредиты? Пополни банкролл без ограничений!</p>
+                <p class="atm-desc">Закончились кредиты? Посмотри видео спонсора и получи деньги на баланс!</p>
                 <div class="atm-options">
-                    <button class="atm-claim-btn" data-amount="1000">+$1,000</button>
-                    <button class="atm-claim-btn atm-highlight" data-amount="5000">+$5,000</button>
-                    <button class="atm-claim-btn" data-amount="20000">+$20,000</button>
+                    <button class="atm-claim-btn" data-amount="1000">🎬 Реклама (+$1,000)</button>
+                    <button class="atm-claim-btn atm-highlight" data-amount="5000">🎬 Реклама (+$5,000)</button>
+                    <button class="atm-claim-btn" data-amount="20000">🎬 Реклама (+$20,000)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ATM Video Ad Modal (musordrop.mp4) -->
+    <div id="adVideoModal" class="modal-backdrop hidden">
+        <div class="modal-card ad-card">
+            <div class="ad-header">
+                <div class="ad-badge">📺 РЕКЛАМНЫЙ СПОНСОР</div>
+                <h2 id="adRewardTitle">СМОТРИ РЕКЛАМУ И ЗАБЕРИ +$5,000</h2>
+            </div>
+            <div class="ad-video-container">
+                <video id="adVideoPlayer" src="musordrop.mp4" playsinline preload="auto" class="ad-video-player"></video>
+                <div id="adVideoOverlay" class="ad-video-overlay hidden">
+                    <button id="adPlayPromptBtn" class="ad-play-prompt-btn">▶ НАЖМИ ДЛЯ ПРОСМОТРА</button>
+                </div>
+            </div>
+            <div class="ad-controls-bar">
+                <div class="ad-status-row">
+                    <span id="adStatusText" class="ad-status-text">Идет воспроизведение рекламы...</span>
+                    <span id="adTimeRemaining" class="ad-timer">0:00</span>
+                </div>
+                <div class="ad-actions-row">
+                    <button id="adClaimRewardBtn" class="ad-claim-btn" disabled>⏳ ДОСМОТРИТЕ ДО КОНЦА</button>
+                    <button id="adCloseBtn" class="ad-cancel-btn">Закрыть</button>
                 </div>
             </div>
         </div>

@@ -123,13 +123,11 @@ class AuthManager {
         this.saveUser();
         this.hideRegistrationModal();
 
-        // Give $5,000 starting balance if balance is not set
-        if (!localStorage.getItem('casino_balance') || parseFloat(localStorage.getItem('casino_balance')) <= 0) {
-            localStorage.setItem('casino_balance', '5000.00');
-            if (window.app) {
-                window.app.balance = 5000;
-                window.app.updateDisplays();
-            }
+        // Give $5,000 real starting deposit
+        localStorage.setItem('casino_balance', '5000.00');
+        if (window.app) {
+            window.app.balance = 5000;
+            window.app.updateDisplays();
         }
 
         if (window.casinoAudio) {

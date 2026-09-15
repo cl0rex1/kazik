@@ -490,6 +490,79 @@ class CasinoAudioEngine {
             osc.stop(startT + 0.04);
         });
     }
+
+    playWinChime() {
+        this.init();
+        if (!this.ctx || this.isMuted) return;
+
+        const t = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            const noteT = t + idx * 0.07;
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, noteT);
+
+            gain.gain.setValueAtTime(0.22, noteT);
+            gain.gain.exponentialRampToValueAtTime(0.001, noteT + 0.35);
+
+            osc.connect(gain);
+            gain.connect(this.masterGain);
+            osc.start(noteT);
+            osc.stop(noteT + 0.35);
+        });
+    }
+
+    playLoseSound() {
+        this.init();
+        if (!this.ctx || this.isMuted) return;
+
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(240, t);
+        osc.frequency.exponentialRampToValueAtTime(65, t + 0.28);
+
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(t);
+        osc.stop(t + 0.28);
+    }
+
+    playCreditTick() {
+        this.init();
+        if (!this.ctx || this.isMuted) return;
+
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1400, t);
+        osc.frequency.exponentialRampToValueAtTime(600, t + 0.03);
+
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(t);
+        osc.stop(t + 0.03);
+    }
+
+    playJackpotWin() {
+        this.init();
+        if (!this.ctx || this.isMuted) return;
+        this.playWinFanfare('big');
+        this.playBassDrop(this.ctx.currentTime);
+    }
 }
 
 window.casinoAudio = new CasinoAudioEngine();
