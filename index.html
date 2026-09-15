@@ -86,6 +86,48 @@
             </button>
         </div>
 
+        <!-- Cyber Win Streak Multiplier HUD -->
+        <div class="streak-hud-container" id="streakHudContainer">
+            <div class="streak-left-group">
+                <span class="streak-flame" id="streakFlameIcon">🔥</span>
+                <div class="streak-info">
+                    <span class="streak-label">СТРИК ПОБЕД</span>
+                    <span class="streak-count" id="streakCountVal">0</span>
+                </div>
+            </div>
+            <div class="streak-mult-card" id="streakMultBadge">
+                <span class="streak-mult-label">МНОЖИТЕЛЬ</span>
+                <span class="streak-mult-val" id="streakMultVal">x1.0</span>
+            </div>
+            <div class="streak-steps-track" id="streakProgressDots">
+                <div class="streak-step" data-step="1" title="1 Победа: Стрик активен">
+                    <span class="step-dot"></span>
+                    <span class="step-num">1</span>
+                    <span class="step-mult">x1.0</span>
+                </div>
+                <div class="streak-step" data-step="2" title="2 Победы подряд: Множитель x1.25">
+                    <span class="step-dot"></span>
+                    <span class="step-num">2</span>
+                    <span class="step-mult">x1.25</span>
+                </div>
+                <div class="streak-step" data-step="3" title="3 Победы подряд: Множитель x1.50">
+                    <span class="step-dot"></span>
+                    <span class="step-num">3</span>
+                    <span class="step-mult">x1.5</span>
+                </div>
+                <div class="streak-step" data-step="4" title="4 Победы подряд: Множитель x2.00">
+                    <span class="step-dot"></span>
+                    <span class="step-num">4</span>
+                    <span class="step-mult">x2.0</span>
+                </div>
+                <div class="streak-step" data-step="5" title="5+ Побед подряд: МАКСИМАЛЬНЫЙ СТРИК x3.00">
+                    <span class="step-dot"></span>
+                    <span class="step-num">5+</span>
+                    <span class="step-mult">x3.0 🔥</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Slots Mode Content -->
         <div id="slotsModeView" class="mode-content-view">
             <!-- Slot Machine Cabinet (3 Reels) -->
@@ -184,8 +226,15 @@
         <!-- Blackjack 21 Mode Content -->
         <div id="blackjackModeView" class="mode-content-view hidden">
             <div class="blackjack-table" id="blackjackView">
-                <div class="table-rules-banner">
-                    ★ BLACKJACK PAYS 3 TO 2 • DEALER MUST STAND ON 17 • SPLIT & DOUBLE DOWN ★
+                <div class="bj-top-bar">
+                    <div class="bj-balance-card">
+                        <span class="bj-balance-icon">💰</span>
+                        <span class="bj-balance-label">БАЛАНС:</span>
+                        <span class="bj-balance-val" id="bjBalanceDisplay">$5,000.00</span>
+                    </div>
+                    <div class="table-rules-banner">
+                        ★ BLACKJACK PAYS 3 TO 2 • DEALER MUST STAND ON 17 • SPLIT & DOUBLE DOWN ★
+                    </div>
                 </div>
 
                 <div class="bj-hands-arena">
@@ -232,6 +281,7 @@
                             <span class="bj-current-bet-val" id="bjCurrentBet">$50</span>
                             <button id="bjClearBetBtn" class="bj-mini-btn">СБРОС</button>
                             <button id="bjDoubleBetBtn" class="bj-mini-btn">x2 СТАВКА</button>
+                            <button id="bjMaxBetBtn" class="bj-mini-btn bj-max-btn">МАКС СТАВКА</button>
                         </div>
                         <button id="bjDealBtn" class="bj-deal-btn">⚡ РАЗДАТЬ КАРТЫ ⚡</button>
                     </div>
@@ -476,6 +526,7 @@
     <script src="js/audio.js"></script>
     <script src="js/particles.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/streak.js"></script>
     <script src="js/slot-engine.js"></script>
     <script src="js/celebrations.js"></script>
     <script src="js/share-card.js"></script>

@@ -132,6 +132,9 @@ class CasinoApp {
         if (window.authManager) {
             window.authManager.renderBadge();
         }
+        if (window.blackjackGame) {
+            window.blackjackGame.updateBetDisplay();
+        }
     }
 
     getCurrentBet() {
@@ -629,14 +632,34 @@ class CasinoApp {
     }
 
     async handleSpinResult(result) {
-        if (window.authManager) {
-            window.authManager.trackSpin(result.totalWin);
-        }
+        let payout = result.totalWin;
+        let streakMultiplier = 1.0;
+        let isStreakBoosted = false;
 
         if (result.totalWin > 0) {
-            if (this.dom.win) this.dom.win.textContent = this.formatCurrency(result.totalWin);
-            this.balance += result.totalWin;
+            if (window.streakManager) {
+                streakMultiplier = window.streakManager.getCurrentMultiplier();
+                if (streakMultiplier > 1.0) {
+                    payout = Math.round(result.totalWin * streakMultiplier);
+                    isStreakBoosted = true;
+                }
+                window.streakManager.recordWin();
+            }
+
+            if (this.dom.win) {
+                if (isStreakBoosted) {
+                    this.dom.win.textContent = `${this.formatCurrency(payout)} (x${streakMultiplier.toFixed(streakMultiplier % 1 === 0 ? 1 : 2)} 🔥)`;
+                } else {
+                    this.dom.win.textContent = this.formatCurrency(payout);
+                }
+            }
+
+            this.balance += payout;
             this.updateDisplays();
+
+            if (window.authManager) {
+                window.authManager.trackSpin(payout);
+            }
 
             // Highlight winning symbols
             this.highlightWinningSymbols(result.winningLines);
@@ -645,8 +668,11 @@ class CasinoApp {
             this.drawPaylines(result.winningLines);
 
             // Trigger Celebration
-            await window.celebrations.celebrate(result.celebrationTier, result.totalWin);
+            await window.celebrations.celebrate(result.celebrationTier, payout);
         } else {
+            if (window.streakManager) {
+                window.streakManager.recordLoss();
+            }
             if (this.dom.win) this.dom.win.textContent = '$0.00';
         }
 

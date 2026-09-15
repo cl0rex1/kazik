@@ -501,14 +501,39 @@ class ShareCardGenerator {
         ctx.fillStyle = '#ffd700';
         ctx.fillText(`🏆 ВСЕГО ВЫИГРАНО: $${Number(totalWon).toLocaleString('en-US', { minimumFractionDigits: 2 })}`, rightX + rightW / 2, totalPillY + 26);
 
-        // Date stamp
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('ru-RU') + ' ' + now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-        ctx.textAlign = 'center';
-        ctx.font = 'bold 13px "Rajdhani", sans-serif';
-        ctx.letterSpacing = '1px';
-        ctx.fillStyle = '#7a76a2';
-        ctx.fillText(`● ЧЕСТНАЯ ИГРА • ${dateStr}`, rightX + rightW / 2, rightY + 346);
+        // Streak Card / Pill
+        const streak = (window.streakManager) ? window.streakManager.currentStreak : 0;
+        const streakMult = (window.streakManager) ? window.streakManager.getCurrentMultiplier() : 1.0;
+        const streakPillY = rightY + 306;
+        if (streak > 0) {
+            ctx.fillStyle = 'rgba(255, 100, 0, 0.16)';
+            ctx.strokeStyle = '#ff7700';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            drawRoundRect(rightX + 24, streakPillY, rightW - 48, 30, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 13px "Rajdhani", sans-serif';
+            ctx.letterSpacing = '1px';
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillText(`🔥 СТРИК ПОБЕД: ${streak} подряд (x${streakMult.toFixed(streakMult % 1 === 0 ? 1 : 2)})`, rightX + rightW / 2, streakPillY + 19);
+
+            // Date stamp below streak pill
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 11px "Rajdhani", sans-serif';
+            ctx.letterSpacing = '1px';
+            ctx.fillStyle = '#7a76a2';
+            ctx.fillText(`● ЧЕСТНАЯ ИГРА • ${dateStr}`, rightX + rightW / 2, rightY + 356);
+        } else {
+            // Date stamp standard
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 13px "Rajdhani", sans-serif';
+            ctx.letterSpacing = '1px';
+            ctx.fillStyle = '#7a76a2';
+            ctx.fillText(`● ЧЕСТНАЯ ИГРА • ${dateStr}`, rightX + rightW / 2, rightY + 346);
+        }
 
         // 5. Official Footer Link Watermark
         ctx.textAlign = 'center';

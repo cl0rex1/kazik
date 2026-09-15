@@ -563,6 +563,33 @@ class CasinoAudioEngine {
         this.playWinFanfare('big');
         this.playBassDrop(this.ctx.currentTime);
     }
+
+    playStreakUp(streakLevel = 2) {
+        this.init();
+        if (!this.ctx || this.isMuted) return;
+
+        const t = this.ctx.currentTime;
+        const baseFreq = Math.min(440 + (streakLevel || 2) * 110, 1100);
+        const notes = [baseFreq, baseFreq * 1.25, baseFreq * 1.5, baseFreq * 2];
+
+        notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            const noteT = t + idx * 0.06;
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, noteT);
+            osc.frequency.exponentialRampToValueAtTime(freq * 1.15, noteT + 0.18);
+
+            gain.gain.setValueAtTime(0.2, noteT);
+            gain.gain.exponentialRampToValueAtTime(0.001, noteT + 0.22);
+
+            osc.connect(gain);
+            gain.connect(this.masterGain);
+            osc.start(noteT);
+            osc.stop(noteT + 0.22);
+        });
+    }
 }
 
 window.casinoAudio = new CasinoAudioEngine();

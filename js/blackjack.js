@@ -47,9 +47,11 @@ class BlackjackGame {
             statusBanner: document.getElementById('bjStatusBanner'),
             statusText: document.getElementById('bjStatusText'),
             currentBetDisplay: document.getElementById('bjCurrentBet'),
+            balanceDisplay: document.getElementById('bjBalanceDisplay'),
             chipBtns: document.querySelectorAll('.bj-chip-btn'),
             clearBetBtn: document.getElementById('bjClearBetBtn'),
             doubleBetBtn: document.getElementById('bjDoubleBetBtn'),
+            maxBetBtn: document.getElementById('bjMaxBetBtn'),
             dealBtn: document.getElementById('bjDealBtn'),
             hitBtn: document.getElementById('bjHitBtn'),
             standBtn: document.getElementById('bjStandBtn'),
@@ -129,6 +131,7 @@ class BlackjackGame {
         } else {
             localStorage.setItem('casino_balance', Math.max(0, val).toFixed(2));
         }
+        this.updateBetDisplay();
     }
 
     bindEvents() {
@@ -168,6 +171,25 @@ class BlackjackGame {
             });
         }
 
+        if (this.dom.maxBetBtn) {
+            this.dom.maxBetBtn.addEventListener('click', () => {
+                if (this.gameState !== 'BETTING' && this.gameState !== 'ROUND_OVER') return;
+                const bal = this.getBalance();
+                if (bal <= 0) {
+                    this.setStatus('НЕДОСТАТОЧНО СРЕДСТВ! ПОПОЛНИ БАЛАНС В БАНКОМАТЕ', 'loss');
+                    if (window.casinoAudio && typeof window.casinoAudio.playLoseSound === 'function') {
+                        window.casinoAudio.playLoseSound();
+                    }
+                    return;
+                }
+                this.currentBet = Math.max(10, Math.floor(bal));
+                if (window.casinoAudio && typeof window.casinoAudio.playChipClick === 'function') {
+                    window.casinoAudio.playChipClick();
+                }
+                this.updateBetDisplay();
+            });
+        }
+
         if (this.dom.dealBtn) {
             this.dom.dealBtn.addEventListener('click', () => this.startRound());
         }
@@ -188,6 +210,13 @@ class BlackjackGame {
     updateBetDisplay() {
         if (this.dom.currentBetDisplay) {
             this.dom.currentBetDisplay.textContent = '$' + this.currentBet.toLocaleString();
+        }
+        if (this.dom.balanceDisplay) {
+            const bal = this.getBalance();
+            this.dom.balanceDisplay.textContent = '$' + Number(bal).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
         }
     }
 
@@ -440,12 +469,21 @@ class BlackjackGame {
         try {
             let winAmount = 0;
             const currentBal = this.getBalance();
+            let streakMult = 1.0;
+            if (window.streakManager) {
+                streakMult = window.streakManager.getCurrentMultiplier();
+            }
+            const isStreakBoosted = streakMult > 1.0;
+            const streakTag = isStreakBoosted ? ` (СТРИК x${streakMult.toFixed(streakMult % 1 === 0 ? 1 : 2)}! 🔥)` : '';
 
             switch (outcome) {
                 case 'BLACKJACK': {
-                    winAmount = this.activeBet + Math.floor(this.activeBet * 1.5);
+                    const baseProfit = Math.floor(this.activeBet * 1.5);
+                    const profit = Math.round(baseProfit * streakMult);
+                    winAmount = this.activeBet + profit;
                     this.setBalance(currentBal + winAmount);
-                    this.setStatus(`💥 БЛЭКДЖЕК! ВЫИГРЫШ 3:2: +$${winAmount.toLocaleString()} 💥`, 'bj');
+                    this.setStatus(`💥 БЛЭКДЖЕК! ВЫИГРЫШ 3:2: +$${winAmount.toLocaleString()}${streakTag} 💥`, 'bj');
+                    if (window.streakManager) window.streakManager.recordWin();
                     if (window.casinoAudio && typeof window.casinoAudio.playJackpotWin === 'function') {
                         window.casinoAudio.playJackpotWin();
                     }
@@ -459,9 +497,11 @@ class BlackjackGame {
                     break;
                 }
                 case 'DEALER_BUST': {
-                    winAmount = this.activeBet * 2;
+                    const profit = Math.round(this.activeBet * streakMult);
+                    winAmount = this.activeBet + profit;
                     this.setBalance(currentBal + winAmount);
-                    this.setStatus(`🎉 ДИЛЕР ПЕРЕБРАЛ! ВЫИГРЫШ: +$${winAmount.toLocaleString()} 🎉`, 'win');
+                    this.setStatus(`🎉 ДИЛЕР ПЕРЕБРАЛ! ВЫИГРЫШ: +$${winAmount.toLocaleString()}${streakTag} 🎉`, 'win');
+                    if (window.streakManager) window.streakManager.recordWin();
                     if (window.casinoAudio && typeof window.casinoAudio.playWinChime === 'function') {
                         window.casinoAudio.playWinChime();
                     }
@@ -469,9 +509,11 @@ class BlackjackGame {
                     break;
                 }
                 case 'WIN': {
-                    winAmount = this.activeBet * 2;
+                    const profit = Math.round(this.activeBet * streakMult);
+                    winAmount = this.activeBet + profit;
                     this.setBalance(currentBal + winAmount);
-                    this.setStatus(`🏆 ВЫ ВЫИГРАЛИ! ВЫПЛАТА: +$${winAmount.toLocaleString()} 🏆`, 'win');
+                    this.setStatus(`🏆 ВЫ ВЫИГРАЛИ! ВЫПЛАТА: +$${winAmount.toLocaleString()}${streakTag} 🏆`, 'win');
+                    if (window.streakManager) window.streakManager.recordWin();
                     if (window.casinoAudio && typeof window.casinoAudio.playWinChime === 'function') {
                         window.casinoAudio.playWinChime();
                     }
@@ -483,12 +525,14 @@ class BlackjackGame {
                     winAmount = this.activeBet;
                     this.setBalance(currentBal + winAmount);
                     this.setStatus('🤝 НИЧЬЯ (PUSH)! СТАВКА ВОЗВРАЩЕНА 🤝', 'push');
+                    if (window.streakManager) window.streakManager.recordPush();
                     if (window.casinoAudio && typeof window.casinoAudio.playCreditTick === 'function') {
                         window.casinoAudio.playCreditTick();
                     }
                     break;
                 }
                 case 'BUST': {
+                    if (window.streakManager) window.streakManager.recordLoss();
                     this.setStatus(`💀 ПЕРЕБОР (${this.calculateScore(this.playerHand).total})! ВЫ ПРОИГРАЛИ -$${this.activeBet.toLocaleString()}`, 'loss');
                     if (window.casinoAudio && typeof window.casinoAudio.playLoseSound === 'function') {
                         window.casinoAudio.playLoseSound();
@@ -496,6 +540,7 @@ class BlackjackGame {
                     break;
                 }
                 case 'DEALER_BJ': {
+                    if (window.streakManager) window.streakManager.recordLoss();
                     this.setStatus(`💀 У ДИЛЕРА БЛЭКДЖЕК! ВЫ ПРОИГРАЛИ -$${this.activeBet.toLocaleString()}`, 'loss');
                     if (window.casinoAudio && typeof window.casinoAudio.playLoseSound === 'function') {
                         window.casinoAudio.playLoseSound();
@@ -504,6 +549,7 @@ class BlackjackGame {
                 }
                 case 'LOSE':
                 default: {
+                    if (window.streakManager) window.streakManager.recordLoss();
                     this.setStatus(`ДИЛЕР ВЫИГРАЛ (${this.calculateScore(this.dealerHand).total} ПРОТИВ ${this.calculateScore(this.playerHand).total}) -$${this.activeBet.toLocaleString()}`, 'loss');
                     if (window.casinoAudio && typeof window.casinoAudio.playLoseSound === 'function') {
                         window.casinoAudio.playLoseSound();

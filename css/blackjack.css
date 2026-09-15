@@ -36,17 +36,59 @@
     pointer-events: none;
 }
 
-.table-rules-banner {
-    text-align: center;
+.bj-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 0 6px;
+    gap: 12px;
+    flex-wrap: wrap;
+    z-index: 5;
+}
+
+.bj-balance-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(4, 18, 26, 0.88);
+    border: 1.5px solid #00f0ff;
+    padding: 5px 14px;
+    border-radius: 20px;
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+}
+
+.bj-balance-icon {
+    font-size: 1.1rem;
+}
+
+.bj-balance-label {
     font-family: 'Rajdhani', sans-serif;
     font-size: 0.85rem;
     font-weight: 700;
-    letter-spacing: 2px;
+    color: #a0a0c0;
+    letter-spacing: 1px;
+}
+
+.bj-balance-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #00ff88;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.table-rules-banner {
+    text-align: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
     color: rgba(0, 255, 136, 0.7);
     text-transform: uppercase;
     text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
-    margin-bottom: 8px;
-    width: 100%;
+    flex: 1;
 }
 
 /* Hands Arena */
@@ -374,6 +416,22 @@
     color: #00f0ff;
 }
 
+.bj-mini-btn.bj-max-btn {
+    background: rgba(255, 215, 0, 0.15);
+    border-color: #ffd700;
+    color: #ffd700;
+    font-weight: 800;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.25);
+}
+
+.bj-mini-btn.bj-max-btn:hover {
+    background: #ffd700;
+    border-color: #ffe033;
+    color: #080c14;
+    box-shadow: 0 0 18px rgba(255, 215, 0, 0.6);
+    transform: translateY(-1px);
+}
+
 /* Deal Primary Action */
 .bj-deal-btn {
     background: linear-gradient(135deg, #00ff88 0%, #00b4d8 100%);
@@ -476,6 +534,24 @@
         padding: 12px 8px;
         min-height: 480px;
         border-radius: 18px;
+    }
+
+    .bj-top-bar {
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+
+    .bj-balance-card {
+        padding: 4px 10px;
+    }
+
+    .bj-balance-label {
+        font-size: 0.78rem;
+    }
+
+    .bj-balance-val {
+        font-size: 0.95rem;
     }
 
     .table-rules-banner {

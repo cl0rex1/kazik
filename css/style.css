@@ -560,6 +560,230 @@ body {
     box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
 }
 
+/* Cyber Win Streak HUD */
+.streak-hud-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: rgba(14, 16, 32, 0.85);
+    border: 1.5px solid rgba(255, 120, 0, 0.35);
+    border-radius: 16px;
+    padding: 8px 18px;
+    margin-bottom: 16px;
+    width: 100%;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.streak-left-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.streak-flame {
+    font-size: 1.6rem;
+    filter: drop-shadow(0 0 8px rgba(255, 120, 0, 0.6));
+    animation: flameWiggle 2s infinite ease-in-out;
+}
+
+.streak-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.streak-label {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #a0a0c0;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.streak-count {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: #ff9900;
+    line-height: 1;
+    text-shadow: 0 0 10px rgba(255, 153, 0, 0.6);
+}
+
+.streak-mult-card {
+    background: rgba(255, 100, 0, 0.12);
+    border: 1.5px solid rgba(255, 120, 0, 0.5);
+    border-radius: 10px;
+    padding: 4px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+}
+
+.streak-mult-label {
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: #ffbb66;
+    letter-spacing: 1px;
+}
+
+.streak-mult-val {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #ffcc00;
+    text-shadow: 0 0 12px rgba(255, 204, 0, 0.8);
+}
+
+.streak-steps-track {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.streak-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 4px 8px;
+    min-width: 42px;
+    transition: all 0.25s ease;
+}
+
+.step-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+    margin-bottom: 2px;
+    transition: all 0.25s ease;
+}
+
+.step-num {
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    color: #8888aa;
+    font-weight: 700;
+}
+
+.step-mult {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    color: #aaaaaa;
+    font-weight: 800;
+}
+
+/* Active Streak State */
+.streak-hud-container.streak-active {
+    border-color: #ff9900;
+    box-shadow: 0 0 18px rgba(255, 153, 0, 0.35);
+}
+
+/* On Fire State (2-3 Streak) */
+.streak-hud-container.streak-on-fire {
+    border-color: #ff5500;
+    background: linear-gradient(135deg, rgba(32, 12, 10, 0.9) 0%, rgba(14, 16, 32, 0.9) 100%);
+    box-shadow: 0 0 25px rgba(255, 85, 0, 0.45);
+}
+
+.streak-hud-container.streak-on-fire .streak-mult-card {
+    background: rgba(255, 85, 0, 0.22);
+    border-color: #ff5500;
+    box-shadow: 0 0 15px rgba(255, 85, 0, 0.5);
+}
+
+/* Godlike State (4+ Streak) */
+.streak-hud-container.streak-godlike {
+    border-color: #ffe600;
+    background: linear-gradient(135deg, rgba(45, 20, 5, 0.92) 0%, rgba(20, 10, 35, 0.92) 100%);
+    box-shadow: 0 0 35px rgba(255, 230, 0, 0.6);
+    animation: godlikePulse 1.2s infinite alternate;
+}
+
+.streak-hud-container.streak-godlike .streak-mult-card {
+    background: rgba(255, 230, 0, 0.28);
+    border-color: #ffe600;
+    box-shadow: 0 0 20px rgba(255, 230, 0, 0.7);
+}
+
+.streak-step.step-active {
+    background: rgba(255, 120, 0, 0.2);
+    border-color: #ff7700;
+    transform: translateY(-1px);
+    box-shadow: 0 0 10px rgba(255, 119, 0, 0.35);
+}
+
+.streak-step.step-active .step-dot {
+    background: #ffaa00;
+    box-shadow: 0 0 6px #ffaa00;
+}
+
+.streak-step.step-active .step-num {
+    color: #ffcc66;
+}
+
+.streak-step.step-active .step-mult {
+    color: #ffea00;
+    font-weight: 900;
+    text-shadow: 0 0 8px rgba(255, 234, 0, 0.6);
+}
+
+.streak-step.step-current {
+    animation: pulseStep 1.2s infinite alternate;
+    border-color: #ffe600;
+    box-shadow: 0 0 15px rgba(255, 230, 0, 0.7);
+}
+
+@keyframes flameWiggle {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.08) rotate(-4deg); }
+    75% { transform: scale(1.08) rotate(4deg); }
+}
+
+@keyframes pulseStep {
+    0% { transform: translateY(-1px) scale(1); }
+    100% { transform: translateY(-2px) scale(1.06); }
+}
+
+@keyframes godlikePulse {
+    0% { box-shadow: 0 0 20px rgba(255, 120, 0, 0.4); }
+    100% { box-shadow: 0 0 35px rgba(255, 230, 0, 0.75); }
+}
+
+@media (max-width: 640px) {
+    .streak-hud-container {
+        padding: 6px 10px;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .streak-steps-track {
+        gap: 4px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .streak-step {
+        min-width: 34px;
+        padding: 3px 5px;
+    }
+
+    .step-mult {
+        font-size: 0.65rem;
+    }
+}
+
 /* Auth / Registration Modal */
 .auth-card {
     max-width: 440px;
