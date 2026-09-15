@@ -67,6 +67,11 @@ class CasinoApp {
 
         this.currentMode = 'slots';
         this.pendingAdReward = 0;
+        this.adVideos = [
+            'ads/musordrop.mp4',
+            'ads/floatup.mp4'
+        ];
+        this.lastAdVideo = null;
 
         // Current 3x3 visible grid of symbols
         this.currentGrid = [];
@@ -82,6 +87,7 @@ class CasinoApp {
         this.startJackpotTicker();
         this.setupModeSwitcher();
         this.setupAdSystem();
+        this.loadAdManifest();
     }
 
     setupModeSwitcher() {
@@ -354,16 +360,54 @@ class CasinoApp {
         }
     }
 
+    async loadAdManifest() {
+        try {
+            const resp = await fetch('ads/manifest.json');
+            if (resp.ok) {
+                const list = await resp.json();
+                if (Array.isArray(list) && list.length > 0) {
+                    this.adVideos = list;
+                }
+            }
+        } catch (e) {
+            // Silently use default adVideos list
+        }
+    }
+
+    getRandomAdVideo() {
+        if (!this.adVideos || this.adVideos.length === 0) {
+            return 'ads/musordrop.mp4';
+        }
+        if (this.adVideos.length === 1) {
+            return this.adVideos[0];
+        }
+        const pool = this.adVideos.filter(v => v !== this.lastAdVideo);
+        const selected = pool.length > 0
+            ? pool[Math.floor(Math.random() * pool.length)]
+            : this.adVideos[Math.floor(Math.random() * this.adVideos.length)];
+        this.lastAdVideo = selected;
+        return selected;
+    }
+
     startAdPlayback(amount) {
         this.pendingAdReward = amount;
         if (this.dom.atmModal) this.dom.atmModal.classList.add('hidden');
         if (!this.dom.adModal || !this.dom.adVideo) return;
+
+        const chosenVideo = this.getRandomAdVideo();
+        if (!this.dom.adVideo.src.endsWith(chosenVideo)) {
+            this.dom.adVideo.src = chosenVideo;
+            this.dom.adVideo.load();
+        }
 
         if (this.dom.adRewardTitle) {
             this.dom.adRewardTitle.textContent = `СМОТРИ РЕКЛАМУ И ЗАБЕРИ +$${amount.toLocaleString()}`;
         }
         if (this.dom.adStatusText) {
             this.dom.adStatusText.textContent = 'Идет показ рекламы спонсора...';
+        }
+        if (this.dom.adTimeRemaining) {
+            this.dom.adTimeRemaining.textContent = '...';
         }
         if (this.dom.adClaimRewardBtn) {
             this.dom.adClaimRewardBtn.disabled = true;
@@ -376,7 +420,7 @@ class CasinoApp {
 
         this.dom.adModal.classList.remove('hidden');
         this.dom.adVideo.currentTime = 0;
-        
+
         const playPromise = this.dom.adVideo.play();
         if (playPromise !== undefined) {
             playPromise.catch(() => {

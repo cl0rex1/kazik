@@ -9,5 +9,6 @@
 - [x] Stage 7: Max Bet Button & Live Balance Display in 21 Mode <!-- id: stage-7 -->
 - [x] Stage 8: Cyber Win Streak System with Progressive Multipliers <!-- id: stage-8 -->
 - [x] Stage 9: Bugfix - Share Modal & Canvas Screenshot Generation Recovery <!-- id: stage-9 -->
+- [x] Stage 10: Dynamic Random Ad Video Selection from ads/ Folder <!-- id: stage-10 -->
 
 
