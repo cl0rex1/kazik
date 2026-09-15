@@ -40,6 +40,15 @@ class ShareCardGenerator {
             this.btnCopy.addEventListener('click', () => this.copyToClipboard());
         }
 
+        // Bind all potential share buttons (header, celebrations)
+        const headerShareBtn = document.getElementById('shareBtn');
+        if (headerShareBtn) {
+            headerShareBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.openWithCurrentState();
+            });
+        }
+
         const celShareBtn = document.getElementById('celebrationShareBtn');
         if (celShareBtn) {
             celShareBtn.addEventListener('click', (e) => {
@@ -72,9 +81,9 @@ class ShareCardGenerator {
 
         if (mode === 'blackjack' && window.blackjackGame) {
             const bj = window.blackjackGame;
-            bet = bj.activeBet || bj.currentBet;
-            const pScore = bj.calculateScore(bj.playerHand);
-            const dScore = bj.calculateScore(bj.dealerHand);
+            bet = bj.activeBet || bj.currentBet || 50;
+            const pScore = bj.calculateScore(bj.playerHand || []);
+            const dScore = bj.calculateScore(bj.dealerHand || []);
             const statusText = (bj.dom.statusText && bj.dom.statusText.textContent) ? bj.dom.statusText.textContent : 'РАУНД 21';
             const statusClass = (bj.dom.statusBanner && bj.dom.statusBanner.className) ? bj.dom.statusBanner.className : '';
 
@@ -88,25 +97,31 @@ class ShareCardGenerator {
 
             bjData = {
                 dealerHand: bj.dealerHand || [],
-                dealerScore: dScore.total,
+                dealerScore: dScore ? dScore.total : 0,
                 playerHand: bj.playerHand || [],
-                playerScore: pScore.total,
+                playerScore: pScore ? pScore.total : 0,
                 statusText: statusText,
                 statusClass: statusClass
             };
         } else {
-            win = parseFloat(app.dom.win.textContent.replace(/[^0-9.]/g, '')) || 0;
-            bet = app.getCurrentBet();
+            const winText = (app.dom && app.dom.win && app.dom.win.textContent) ? app.dom.win.textContent : '$0.00';
+            const cleanWin = winText.split('(')[0].replace(/[^0-9.]/g, '');
+            win = parseFloat(cleanWin) || 0;
+            bet = (typeof app.getCurrentBet === 'function') ? app.getCurrentBet() : 50;
         }
 
-        this.generateCard({
-            mode: mode,
-            grid: app.currentGrid,
-            win: win,
-            bet: bet,
-            balance: app.balance,
-            bjData: bjData
-        });
+        try {
+            this.generateCard({
+                mode: mode,
+                grid: app.currentGrid,
+                win: win,
+                bet: bet,
+                balance: app.balance || 0,
+                bjData: bjData
+            });
+        } catch (err) {
+            console.error('Error generating share card:', err);
+        }
 
         if (this.modal) this.modal.classList.remove('hidden');
     }
@@ -501,6 +516,10 @@ class ShareCardGenerator {
         ctx.fillStyle = '#ffd700';
         ctx.fillText(`🏆 ВСЕГО ВЫИГРАНО: $${Number(totalWon).toLocaleString('en-US', { minimumFractionDigits: 2 })}`, rightX + rightW / 2, totalPillY + 26);
 
+        // Date stamp string
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('ru-RU') + ' ' + now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
         // Streak Card / Pill
         const streak = (window.streakManager) ? window.streakManager.currentStreak : 0;
         const streakMult = (window.streakManager) ? window.streakManager.getCurrentMultiplier() : 1.0;
@@ -516,21 +535,18 @@ class ShareCardGenerator {
 
             ctx.textAlign = 'center';
             ctx.font = 'bold 13px "Rajdhani", sans-serif';
-            ctx.letterSpacing = '1px';
             ctx.fillStyle = '#ffcc00';
             ctx.fillText(`🔥 СТРИК ПОБЕД: ${streak} подряд (x${streakMult.toFixed(streakMult % 1 === 0 ? 1 : 2)})`, rightX + rightW / 2, streakPillY + 19);
 
             // Date stamp below streak pill
             ctx.textAlign = 'center';
             ctx.font = 'bold 11px "Rajdhani", sans-serif';
-            ctx.letterSpacing = '1px';
             ctx.fillStyle = '#7a76a2';
             ctx.fillText(`● ЧЕСТНАЯ ИГРА • ${dateStr}`, rightX + rightW / 2, rightY + 356);
         } else {
             // Date stamp standard
             ctx.textAlign = 'center';
             ctx.font = 'bold 13px "Rajdhani", sans-serif';
-            ctx.letterSpacing = '1px';
             ctx.fillStyle = '#7a76a2';
             ctx.fillText(`● ЧЕСТНАЯ ИГРА • ${dateStr}`, rightX + rightW / 2, rightY + 346);
         }
@@ -538,7 +554,6 @@ class ShareCardGenerator {
         // 5. Official Footer Link Watermark
         ctx.textAlign = 'center';
         ctx.font = 'bold 14px "Orbitron", sans-serif';
-        ctx.letterSpacing = '2px';
         ctx.fillStyle = '#00f0ff';
         ctx.fillText('cl0rex1.github.io/kazik  •  CYBER VEGAS 777  •  MEGA UPDATE 2.1', w / 2, 545);
 
@@ -555,40 +570,68 @@ class ShareCardGenerator {
         if (!this.currentBlob && this.currentDataUrl) {
             this.currentBlob = this.dataUrlToBlob(this.currentDataUrl);
         }
-        if (!this.currentBlob) return;
+        if (!this.currentBlob && !this.currentDataUrl) return;
 
-        const file = new File([this.currentBlob], 'cyber-vegas-win.png', {
-            type: 'image/png',
-            lastModified: Date.now()
-        });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        let file = null;
+        if (this.currentBlob) {
             try {
-                // CRITICAL FIX: DO NOT pass 'text'!
-                // In Telegram & WhatsApp, passing 'text' overrides the image and sends only text!
-                // Passing strictly 'files: [file]' forces the app to open the photo attachment sender!
+                file = new File([this.currentBlob], 'cyber-vegas-win.png', {
+                    type: 'image/png',
+                    lastModified: Date.now()
+                });
+            } catch (e) {
+                file = null;
+            }
+        }
+
+        let canShareFile = false;
+        try {
+            if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+                canShareFile = true;
+            }
+        } catch (e) {
+            canShareFile = false;
+        }
+
+        if (canShareFile && file) {
+            try {
                 await navigator.share({
                     files: [file]
                 });
                 this.showToast('Картинка успешно отправлена!');
+                return;
             } catch (err) {
-                if (err.name !== 'AbortError') {
-                    this.downloadPng();
+                if (err && err.name === 'AbortError') {
+                    return; // User intentionally cancelled the native share picker
                 }
             }
-        } else {
-            this.downloadPng();
         }
+
+        // Graceful fallback: download PNG directly to device
+        this.downloadPng();
     }
 
     downloadPng() {
-        if (!this.currentDataUrl) return;
+        if (!this.currentDataUrl && !this.currentBlob) return;
         const a = document.createElement('a');
-        a.href = this.currentDataUrl;
+        let objectUrl = null;
+        if (this.currentBlob && window.URL && typeof window.URL.createObjectURL === 'function') {
+            try {
+                objectUrl = URL.createObjectURL(this.currentBlob);
+                a.href = objectUrl;
+            } catch (e) {
+                a.href = this.currentDataUrl;
+            }
+        } else {
+            a.href = this.currentDataUrl;
+        }
         a.download = `cyber-vegas-win-${Date.now()}.png`;
         document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
+        setTimeout(() => {
+            document.body.removeChild(a);
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+        }, 200);
         this.showToast('Картинка сохранена на устройство!');
     }
 
