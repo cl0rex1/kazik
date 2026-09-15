@@ -1,0 +1,519 @@
+/**
+ * Cyber Vegas 21 (Blackjack) Stylesheet
+ * High-performance cyber-felt table, glowing cards, chip rack & neon controls.
+ */
+
+.blackjack-table {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    min-height: 520px;
+    background: radial-gradient(ellipse at 50% 30%, #0d2320 0%, #081518 60%, #03080c 100%);
+    border: 2px solid rgba(0, 240, 255, 0.35);
+    border-radius: 28px;
+    box-shadow: 0 0 35px rgba(0, 240, 255, 0.15), inset 0 0 40px rgba(0, 0, 0, 0.85);
+    padding: 18px 16px 22px 16px;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+}
+
+/* Cyber Table Felt Inner Ring Markings */
+.blackjack-table::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    height: 80%;
+    border: 1px dashed rgba(0, 255, 136, 0.18);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.table-rules-banner {
+    text-align: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: rgba(0, 255, 136, 0.7);
+    text-transform: uppercase;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+/* Hands Arena */
+.bj-hands-arena {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 16px;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.bj-hand-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    position: relative;
+}
+
+.bj-hand-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.bj-hand-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    color: #a0a0c0;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+}
+
+.bj-score-badge {
+    background: rgba(0, 0, 0, 0.75);
+    border: 1px solid #ffd700;
+    color: #ffd700;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 2px 10px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    min-width: 32px;
+    text-align: center;
+}
+
+/* Cards Row */
+.bj-cards-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 122px;
+    width: 100%;
+    padding: 4px 10px;
+    position: relative;
+}
+
+/* Cyber Card Styling */
+.cyber-card {
+    width: 78px;
+    height: 116px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #ffffff 0%, #edf0f5 100%);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6), 0 0 10px rgba(255, 255, 255, 0.15);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px;
+    margin-left: -22px;
+    animation: dealCardIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    transform-origin: center center;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cyber-card:first-child {
+    margin-left: 0;
+}
+
+.cyber-card:hover {
+    transform: translateY(-8px) scale(1.05);
+    z-index: 10;
+    box-shadow: 0 12px 22px rgba(0, 0, 0, 0.7), 0 0 16px rgba(0, 240, 255, 0.4);
+}
+
+@keyframes dealCardIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.6) rotate(15deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotate(0deg);
+    }
+}
+
+/* Card Colors */
+.card-color-pink {
+    color: #e6005c;
+}
+
+.card-color-cyan {
+    color: #0077b6;
+}
+
+.card-corner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+}
+
+.c-rank {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.c-suit {
+    font-size: 0.9rem;
+}
+
+.btm-corner {
+    transform: rotate(180deg);
+}
+
+.card-center-suit {
+    font-size: 2rem;
+    text-align: center;
+    align-self: center;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Card Back Design */
+.cyber-card.card-back {
+    background: linear-gradient(135deg, #0b101c 0%, #172138 50%, #090e18 100%);
+    border: 2px solid #00f0ff;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.7), 0 0 12px rgba(0, 240, 255, 0.4);
+    padding: 4px;
+}
+
+.card-back-pattern {
+    width: 100%;
+    height: 100%;
+    border: 1px dashed rgba(0, 240, 255, 0.5);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(0, 240, 255, 0.05),
+        rgba(0, 240, 255, 0.05) 6px,
+        rgba(0, 0, 0, 0.2) 6px,
+        rgba(0, 0, 0, 0.2) 12px
+    );
+}
+
+.cyber-logo-icon {
+    font-size: 1.6rem;
+    color: #00f0ff;
+    text-shadow: 0 0 8px #00f0ff;
+}
+
+/* Status Banner */
+.bj-status-banner {
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    margin: 6px auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    animation: bannerPop 0.3s ease-out;
+}
+
+@keyframes bannerPop {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.bj-status-banner.win {
+    background: rgba(0, 255, 136, 0.2);
+    border: 2px solid #00ff88;
+    color: #00ff88;
+    text-shadow: 0 0 12px rgba(0, 255, 136, 0.6);
+}
+
+.bj-status-banner.bj {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.25), rgba(255, 0, 127, 0.25));
+    border: 2px solid #ffd700;
+    color: #ffd700;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    animation: bannerPulse 1s infinite alternate;
+}
+
+@keyframes bannerPulse {
+    0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+    100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.8); }
+}
+
+.bj-status-banner.loss {
+    background: rgba(255, 0, 90, 0.2);
+    border: 2px solid #ff005a;
+    color: #ff3377;
+    text-shadow: 0 0 10px rgba(255, 0, 90, 0.5);
+}
+
+.bj-status-banner.push {
+    background: rgba(0, 240, 255, 0.2);
+    border: 2px solid #00f0ff;
+    color: #00f0ff;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+/* Controls Wrapper */
+.bj-controls-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+/* Chip Betting Area */
+.bj-bet-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+.bj-chips-rack {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.bj-chip-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 3px dashed #ffffff;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.4);
+    transition: transform 0.15s ease, filter 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bj-chip-btn:hover {
+    transform: translateY(-4px) scale(1.08);
+    filter: brightness(1.2);
+}
+
+.bj-chip-btn:active {
+    transform: scale(0.95);
+}
+
+.chip-10 { background: radial-gradient(circle, #0077b6, #023e8a); border-color: #90e0ef; }
+.chip-25 { background: radial-gradient(circle, #2d6a4f, #1b4332); border-color: #74c69d; }
+.chip-50 { background: radial-gradient(circle, #b7094c, #890b39); border-color: #f72585; }
+.chip-100 { background: radial-gradient(circle, #212529, #000000); border-color: #ffd700; color: #ffd700; }
+.chip-250 { background: radial-gradient(circle, #7209b7, #3a0ca3); border-color: #b5179e; }
+.chip-500 { background: radial-gradient(circle, #f77f00, #d62828); border-color: #fcbf49; }
+
+/* Current Bet Display Bar */
+.bj-bet-summary-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bj-bet-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #a0a0c0;
+}
+
+.bj-current-bet-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.bj-mini-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.bj-mini-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: #00f0ff;
+    color: #00f0ff;
+}
+
+/* Deal Primary Action */
+.bj-deal-btn {
+    background: linear-gradient(135deg, #00ff88 0%, #00b4d8 100%);
+    border: none;
+    border-radius: 12px;
+    color: #050a12;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 1.15rem;
+    padding: 12px 36px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+    transition: all 0.2s ease;
+}
+
+.bj-deal-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
+}
+
+/* Action Controls (Hit, Stand, Double) */
+.bj-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.bj-action-btn {
+    flex: 1;
+    min-width: 120px;
+    max-width: 170px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.bj-hit-btn {
+    background: rgba(0, 240, 255, 0.15);
+    border-color: #00f0ff;
+    color: #00f0ff;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+}
+
+.bj-hit-btn:hover:not(:disabled) {
+    background: #00f0ff;
+    color: #030812;
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.7);
+}
+
+.bj-stand-btn {
+    background: rgba(255, 0, 90, 0.15);
+    border-color: #ff005a;
+    color: #ff3377;
+    box-shadow: 0 0 15px rgba(255, 0, 90, 0.3);
+}
+
+.bj-stand-btn:hover:not(:disabled) {
+    background: #ff005a;
+    color: #ffffff;
+    box-shadow: 0 0 25px rgba(255, 0, 90, 0.7);
+}
+
+.bj-double-btn {
+    background: rgba(255, 215, 0, 0.15);
+    border-color: #ffd700;
+    color: #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.bj-double-btn:hover:not(:disabled) {
+    background: #ffd700;
+    color: #0d0a02;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.7);
+}
+
+.bj-action-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+    box-shadow: none;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
+    .blackjack-table {
+        padding: 12px 8px;
+        min-height: 480px;
+        border-radius: 18px;
+    }
+
+    .table-rules-banner {
+        font-size: 0.72rem;
+        letter-spacing: 1px;
+    }
+
+    .cyber-card {
+        width: 62px;
+        height: 94px;
+        margin-left: -18px;
+        padding: 4px;
+    }
+
+    .c-rank {
+        font-size: 0.95rem;
+    }
+
+    .c-suit {
+        font-size: 0.75rem;
+    }
+
+    .card-center-suit {
+        font-size: 1.5rem;
+    }
+
+    .bj-chip-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 0.8rem;
+    }
+
+    .bj-action-btn {
+        min-width: 95px;
+        font-size: 0.88rem;
+        padding: 10px 8px;
+    }
+
+    .bj-deal-btn {
+        padding: 10px 24px;
+        font-size: 1rem;
+    }
+}

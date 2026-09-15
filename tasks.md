@@ -1,5 +1,8 @@
-# Tasks - Fix Screenshot Image Sharing & Web Share Attachment
+# Tasks - Mega Update 2.0: 21 (Blackjack), Performance Optimization & Client Auth
 
-- [x] Stage 1: Implement Synchronous Blob Generation & Share File Payload Fix <!-- id: stage-1 -->
-- [x] Stage 2: Enhance Share Modal UX (Direct Image Sharing, Copy, Download & Long-Press Hint) <!-- id: stage-2 -->
-- [x] Stage 3: Verification & Git Push Readiness <!-- id: stage-3 -->
+- [x] Stage 1: Profile & Client-Side Registration (localStorage auth, avatar selection, stats, VIP rank) <!-- id: stage-1 -->
+- [x] Stage 2: Remove Start Welcome Free Spins & Clean Initialization <!-- id: stage-2 -->
+- [x] Stage 3: Particle & Win FX Performance Optimization (Offscreen sprite caching, shadowBlur removal, particle culling) <!-- id: stage-3 -->
+- [x] Stage 4: Blackjack / 21 Game Mode Implementation (Deck, Player/Dealer Hands, Split/Double, Sound, UI) <!-- id: stage-4 -->
+- [x] Stage 5: Testing, Verification & Walkthrough <!-- id: stage-5 -->
+

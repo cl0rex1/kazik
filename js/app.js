@@ -6,7 +6,7 @@
 class CasinoApp {
     constructor() {
         const saved = parseFloat(localStorage.getItem('casino_balance'));
-        this.balance = (!isNaN(saved) && saved > 0) ? saved : 10000;
+        this.balance = (!isNaN(saved) && saved > 0) ? saved : 5000;
         this.bets = [5, 10, 25, 50, 100, 250, 500, 1000, 2500];
         this.betIndex = 2; // Default $25 (5 lines x $5)
         this.isSpinning = false;
@@ -43,16 +43,20 @@ class CasinoApp {
             atmBtn: document.getElementById('atmBtn'),
             closeAtmBtn: document.getElementById('closeAtmBtn'),
             atmModal: document.getElementById('atmModal'),
-            welcomeModal: document.getElementById('welcomeModal'),
-            claimWelcomeBtn: document.getElementById('claimWelcomeBtn'),
             freeSpinsBanner: document.getElementById('freeSpinsBanner'),
             fsLeftCount: document.getElementById('fsLeftCount'),
             paylinesSvg: document.getElementById('paylinesSvg'),
             jpMini: document.getElementById('jpMiniVal'),
             jpMajor: document.getElementById('jpMajorVal'),
             jpGrand: document.getElementById('jpGrandVal'),
-            reelsGrid: document.getElementById('reelsGrid')
+            reelsGrid: document.getElementById('reelsGrid'),
+            modeSlotsBtn: document.getElementById('modeSlotsBtn'),
+            modeBlackjackBtn: document.getElementById('modeBlackjackBtn'),
+            slotsModeView: document.getElementById('slotsModeView'),
+            blackjackModeView: document.getElementById('blackjackModeView')
         };
+
+        this.currentMode = 'slots';
 
         // Current 3x3 visible grid of symbols
         this.currentGrid = [];
@@ -66,24 +70,36 @@ class CasinoApp {
         this.bindEvents();
         this.updateSoundIcon();
         this.startJackpotTicker();
-        this.checkWelcomeBonus();
+        this.setupModeSwitcher();
     }
 
-    checkWelcomeBonus() {
-        if (!this.dom.welcomeModal || !this.dom.claimWelcomeBtn) return;
-        const claimed = localStorage.getItem('casino_welcome_claimed');
-        if (!claimed) {
-            this.dom.welcomeModal.classList.remove('hidden');
-            this.dom.claimWelcomeBtn.addEventListener('click', () => {
-                localStorage.setItem('casino_welcome_claimed', 'true');
-                this.dom.welcomeModal.classList.add('hidden');
-                this.freeSpinsRemaining += 15;
-                if (this.dom.fsLeftCount) this.dom.fsLeftCount.textContent = this.freeSpinsRemaining;
-                if (this.dom.freeSpinsBanner) this.dom.freeSpinsBanner.classList.remove('hidden');
-                window.casinoAudio.playFreeSpinsTrigger();
-                window.particleEngine.burstFireworks(80);
-                window.particleEngine.burstCoins(50);
-            }, { once: true });
+    setupModeSwitcher() {
+        if (this.dom.modeSlotsBtn) {
+            this.dom.modeSlotsBtn.addEventListener('click', () => this.switchMode('slots'));
+        }
+        if (this.dom.modeBlackjackBtn) {
+            this.dom.modeBlackjackBtn.addEventListener('click', () => this.switchMode('blackjack'));
+        }
+    }
+
+    switchMode(mode) {
+        if (this.isSpinning) return;
+        this.currentMode = mode;
+        if (window.casinoAudio) window.casinoAudio.playButtonClick();
+
+        if (mode === 'slots') {
+            if (this.dom.modeSlotsBtn) this.dom.modeSlotsBtn.classList.add('active');
+            if (this.dom.modeBlackjackBtn) this.dom.modeBlackjackBtn.classList.remove('active');
+            if (this.dom.slotsModeView) this.dom.slotsModeView.classList.remove('hidden');
+            if (this.dom.blackjackModeView) this.dom.blackjackModeView.classList.add('hidden');
+        } else {
+            if (this.dom.modeSlotsBtn) this.dom.modeSlotsBtn.classList.remove('active');
+            if (this.dom.modeBlackjackBtn) this.dom.modeBlackjackBtn.classList.add('active');
+            if (this.dom.slotsModeView) this.dom.slotsModeView.classList.add('hidden');
+            if (this.dom.blackjackModeView) this.dom.blackjackModeView.classList.remove('hidden');
+            if (window.blackjackGame) {
+                window.blackjackGame.updateBetDisplay();
+            }
         }
     }
 
@@ -102,6 +118,9 @@ class CasinoApp {
             this.dom.bet.textContent = this.formatCurrency(this.getCurrentBet());
         }
         localStorage.setItem('casino_balance', this.balance.toFixed(2));
+        if (window.authManager) {
+            window.authManager.renderBadge();
+        }
     }
 
     getCurrentBet() {
@@ -166,6 +185,7 @@ class CasinoApp {
         // Keyboard Shortcut: Spacebar
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
+                if (this.currentMode !== 'slots') return;
                 e.preventDefault();
                 // If celebration modal is open, collect it
                 if (window.celebrations && window.celebrations.overlay && !window.celebrations.overlay.classList.contains('hidden')) {
@@ -500,6 +520,10 @@ class CasinoApp {
     }
 
     async handleSpinResult(result) {
+        if (window.authManager) {
+            window.authManager.trackSpin(result.totalWin);
+        }
+
         if (result.totalWin > 0) {
             if (this.dom.win) this.dom.win.textContent = this.formatCurrency(result.totalWin);
             this.balance += result.totalWin;

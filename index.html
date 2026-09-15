@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/slot.css">
     <link rel="stylesheet" href="css/effects.css">
+    <link rel="stylesheet" href="css/blackjack.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
@@ -22,6 +23,13 @@
         <!-- Top Navigation Bar -->
         <header class="casino-header">
             <div class="header-left">
+                <button id="profileBadgeBtn" class="profile-badge-btn" title="Мой профиль">
+                    <span id="profileAvatar" class="profile-avatar">🕶️</span>
+                    <div class="profile-info">
+                        <span id="profileName" class="profile-name">Игрок</span>
+                        <span id="profileRank" class="profile-rank">НОВИЧОК</span>
+                    </div>
+                </button>
                 <button id="paytableBtn" class="pill-btn neon-btn" title="Таблица выплат">
                     <span class="icon">📜</span>
                     <span class="label">Выплаты</span>
@@ -66,8 +74,22 @@
             </div>
         </div>
 
-        <!-- Slot Machine Cabinet (3 Reels) -->
-        <main class="cabinet-wrapper">
+        <!-- Game Mode Switcher -->
+        <div class="game-modes-bar">
+            <button id="modeSlotsBtn" class="mode-tab active">
+                <span class="mode-icon">🎰</span>
+                <span class="mode-text">СЛОТЫ 777</span>
+            </button>
+            <button id="modeBlackjackBtn" class="mode-tab">
+                <span class="mode-icon">🃏</span>
+                <span class="mode-text">21 ОЧКО</span>
+            </button>
+        </div>
+
+        <!-- Slots Mode Content -->
+        <div id="slotsModeView" class="mode-content-view">
+            <!-- Slot Machine Cabinet (3 Reels) -->
+            <main class="cabinet-wrapper">
             <div class="cabinet-housing" id="cabinetHousing">
                 <!-- Free Spins Banner indicator -->
                 <div id="freeSpinsBanner" class="free-spins-indicator hidden">
@@ -157,20 +179,141 @@
                 </div>
             </div>
         </main>
+        </div>
+
+        <!-- Blackjack 21 Mode Content -->
+        <div id="blackjackModeView" class="mode-content-view hidden">
+            <div class="blackjack-table" id="blackjackView">
+                <div class="table-rules-banner">
+                    ★ BLACKJACK PAYS 3 TO 2 • DEALER MUST STAND ON 17 • SPLIT & DOUBLE DOWN ★
+                </div>
+
+                <div class="bj-hands-arena">
+                    <!-- Dealer Hand Area -->
+                    <div class="bj-hand-container">
+                        <div class="bj-hand-info">
+                            <span class="bj-hand-title">ДИЛЕР</span>
+                            <span class="bj-score-badge" id="bjDealerScore">0</span>
+                        </div>
+                        <div class="bj-cards-row" id="bjDealerCards"></div>
+                    </div>
+
+                    <!-- Status Banner -->
+                    <div id="bjStatusBanner" class="bj-status-banner hidden">
+                        <span id="bjStatusText">РАЗДАЙТЕ КАРТЫ</span>
+                    </div>
+
+                    <!-- Player Hand Area -->
+                    <div class="bj-hand-container">
+                        <div class="bj-hand-info">
+                            <span class="bj-hand-title">ВАША РУКА</span>
+                            <span class="bj-score-badge" id="bjPlayerScore">0</span>
+                        </div>
+                        <div class="bj-cards-row" id="bjPlayerCards"></div>
+                    </div>
+                </div>
+
+                <!-- Blackjack Controls -->
+                <div class="bj-controls-wrapper">
+                    <!-- Betting Group (Visible before deal) -->
+                    <div id="bjBetControlsGroup" class="bj-bet-group">
+                        <div class="bj-chips-rack">
+                            <button class="bj-chip-btn chip-10" data-value="10">+10</button>
+                            <button class="bj-chip-btn chip-25" data-value="25">+25</button>
+                            <button class="bj-chip-btn chip-50" data-value="50">+50</button>
+                            <button class="bj-chip-btn chip-100" data-value="100">+100</button>
+                            <button class="bj-chip-btn chip-250" data-value="250">+250</button>
+                            <button class="bj-chip-btn chip-500" data-value="500">+500</button>
+                        </div>
+                        <div class="bj-bet-summary-bar">
+                            <span class="bj-bet-label">СТАВКА:</span>
+                            <span class="bj-current-bet-val" id="bjCurrentBet">$50</span>
+                            <button id="bjClearBetBtn" class="bj-mini-btn">СБРОС</button>
+                            <button id="bjDoubleBetBtn" class="bj-mini-btn">x2 СТАВКА</button>
+                        </div>
+                        <button id="bjDealBtn" class="bj-deal-btn">⚡ РАЗДАТЬ КАРТЫ ⚡</button>
+                    </div>
+
+                    <!-- Action Group (Hit, Stand, Double Down - visible during hand) -->
+                    <div id="bjActionControlsGroup" class="bj-actions-row hidden">
+                        <button id="bjHitBtn" class="bj-action-btn bj-hit-btn">
+                            <span>➕</span>
+                            <span>ВЗЯТЬ</span>
+                        </button>
+                        <button id="bjStandBtn" class="bj-action-btn bj-stand-btn">
+                            <span>🛑</span>
+                            <span>ХВАТИТ</span>
+                        </button>
+                        <button id="bjDoubleDownBtn" class="bj-action-btn bj-double-btn">
+                            <span>✖2</span>
+                            <span>УДВОИТЬ</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Welcome Free Spins Bonus Modal -->
-    <div id="welcomeModal" class="modal-backdrop hidden">
-        <div class="modal-card welcome-card">
-            <div class="welcome-header-badge">🎁 ВЕЛКОМ БОНУС</div>
-            <h2 class="welcome-title">15 БЕСПЛАТНЫХ СПИНОВ!</h2>
-            <p class="welcome-desc">Добро пожаловать в <strong>Cyber Vegas 777</strong>!<br>Каждому новому игроку дарим 15 фриспинов с множителем выигрыша <strong>x3</strong> во всех раундах!</p>
-            <div class="welcome-chips-fx">
-                <span class="chip-sparkle">⚡</span>
-                <span class="welcome-multiplier">МНОЖИТЕЛЬ x3</span>
-                <span class="chip-sparkle">⚡</span>
+    <!-- Client-Side Registration Modal -->
+    <div id="authModal" class="modal-backdrop hidden">
+        <div class="modal-card auth-card">
+            <div class="auth-badge">👑 ДОБРО ПОЖАЛОВАТЬ</div>
+            <h2 class="auth-title">РЕГИСТРАЦИЯ ИГРОКА</h2>
+            <p class="auth-desc">Создай свой профиль (сохраняется в памяти браузера):</p>
+            
+            <div class="auth-field">
+                <label class="auth-label" for="regUsername">ТВОЙ НИКНЕЙМ</label>
+                <input type="text" id="regUsername" class="auth-input" placeholder="Введите имя..." maxlength="16" autocomplete="off">
             </div>
-            <button id="claimWelcomeBtn" class="welcome-claim-btn">⚡ ЗАБРАТЬ 15 СПИНОВ И ИГРАТЬ ⚡</button>
+
+            <div class="auth-field">
+                <label class="auth-label">ВЫБЕРИ АВАТАР</label>
+                <div id="avatarPickerList" class="avatar-picker-list"></div>
+            </div>
+
+            <div class="auth-bonus-box">
+                🎁 СТАРТОВЫЙ БАНКРОЛЛ: <strong>$5,000.00</strong>
+            </div>
+
+            <button id="submitRegBtn" class="auth-submit-btn">⚡ ВОЙТИ В КАЗИНО ⚡</button>
+        </div>
+    </div>
+
+    <!-- User Profile & Stats Modal -->
+    <div id="profileModal" class="modal-backdrop hidden">
+        <div class="modal-card profile-card">
+            <div class="modal-header">
+                <h2>ПРОФИЛЬ ИГРОКА</h2>
+                <button id="closeProfileBtn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-header-view">
+                    <div id="modalProfileAvatar" class="profile-huge-avatar">🕶️</div>
+                    <div class="profile-details">
+                        <div id="modalProfileName" class="modal-profile-name">Игрок</div>
+                        <div id="modalProfileRank" class="modal-profile-rank">НОВИЧОК</div>
+                    </div>
+                </div>
+
+                <div class="profile-stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-box-label">Спинов в слотах</div>
+                        <div class="stat-box-val" id="statTotalSpins">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-label">Раундов в 21</div>
+                        <div class="stat-box-val" id="statTotalBJ">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-label">Всего выиграно</div>
+                        <div class="stat-box-val" id="statTotalWon">$0.00</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-label">Рекордный куш</div>
+                        <div class="stat-box-val" id="statBiggestWin">$0.00</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -304,9 +447,11 @@
     <!-- Engine Scripts -->
     <script src="js/audio.js"></script>
     <script src="js/particles.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/slot-engine.js"></script>
     <script src="js/celebrations.js"></script>
     <script src="js/share-card.js"></script>
+    <script src="js/blackjack.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

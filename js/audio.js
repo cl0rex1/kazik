@@ -436,6 +436,60 @@ class CasinoAudioEngine {
         riserOsc.start(t);
         riserOsc.stop(t + 1.3);
     }
+
+    playCardDeal() {
+        this.init();
+        if (!this.ctx || this.isMuted) return;
+
+        const t = this.ctx.currentTime;
+        // White noise transient for card swoosh
+        const bufferSize = Math.floor(this.ctx.sampleRate * 0.08);
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+        }
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1800, t);
+        filter.frequency.exponentialRampToValueAtTime(800, t + 0.08);
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.3, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        noise.start(t);
+    }
+
+    playChipClick() {
+        this.init();
+        if (!this.ctx || this.isMuted) return;
+
+        const t = this.ctx.currentTime;
+        [1800, 2400].forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            const startT = t + idx * 0.03;
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, startT);
+            osc.frequency.exponentialRampToValueAtTime(freq * 0.5, startT + 0.04);
+
+            gain.gain.setValueAtTime(0.25, startT);
+            gain.gain.exponentialRampToValueAtTime(0.001, startT + 0.04);
+
+            osc.connect(gain);
+            gain.connect(this.masterGain);
+            osc.start(startT);
+            osc.stop(startT + 0.04);
+        });
+    }
 }
 
 window.casinoAudio = new CasinoAudioEngine();
