@@ -56,8 +56,9 @@ class CasinoApp {
             blackjackModeView: document.getElementById('blackjackModeView'),
             adModal: document.getElementById('adVideoModal'),
             adVideo: document.getElementById('adVideoPlayer'),
-            adOverlay: document.getElementById('adVideoOverlay'),
-            adPlayPromptBtn: document.getElementById('adPlayPromptBtn'),
+            adSoundToggleBtn: document.getElementById('adSoundToggleBtn'),
+            adSoundIcon: document.getElementById('adSoundIcon'),
+            adSoundLabel: document.getElementById('adSoundLabel'),
             adRewardTitle: document.getElementById('adRewardTitle'),
             adStatusText: document.getElementById('adStatusText'),
             adTimeRemaining: document.getElementById('adTimeRemaining'),
@@ -321,10 +322,10 @@ class CasinoApp {
             });
         });
 
-        if (this.dom.adPlayPromptBtn && this.dom.adVideo) {
-            this.dom.adPlayPromptBtn.addEventListener('click', () => {
-                if (this.dom.adOverlay) this.dom.adOverlay.classList.add('hidden');
-                this.dom.adVideo.play().catch(err => console.log('Video play error:', err));
+        if (this.dom.adSoundToggleBtn && this.dom.adVideo) {
+            this.dom.adSoundToggleBtn.addEventListener('click', () => {
+                this.dom.adVideo.muted = !this.dom.adVideo.muted;
+                this.updateAdSoundUI();
             });
         }
 
@@ -341,8 +342,17 @@ class CasinoApp {
         }
 
         if (this.dom.adVideo) {
+            this.dom.adVideo.addEventListener('loadedmetadata', () => {
+                if (this.dom.adVideo.duration && !isNaN(this.dom.adVideo.duration)) {
+                    const secs = Math.ceil(this.dom.adVideo.duration);
+                    if (this.dom.adTimeRemaining) {
+                        this.dom.adTimeRemaining.textContent = `0:${secs < 10 ? '0' : ''}${secs}`;
+                    }
+                }
+            });
+
             this.dom.adVideo.addEventListener('timeupdate', () => {
-                if (!this.dom.adVideo.duration) return;
+                if (!this.dom.adVideo.duration || isNaN(this.dom.adVideo.duration)) return;
                 const rem = Math.max(0, this.dom.adVideo.duration - this.dom.adVideo.currentTime);
                 const secs = Math.ceil(rem);
                 if (this.dom.adTimeRemaining) {
@@ -357,12 +367,28 @@ class CasinoApp {
             this.dom.adVideo.addEventListener('ended', () => {
                 this.onAdCompleted();
             });
+
+            this.dom.adVideo.addEventListener('error', () => {
+                console.warn('Ad video error caught on player:', this.dom.adVideo.error);
+                this.handleAdVideoError();
+            });
+        }
+    }
+
+    updateAdSoundUI() {
+        if (!this.dom.adVideo) return;
+        const isMuted = this.dom.adVideo.muted;
+        if (this.dom.adSoundIcon) {
+            this.dom.adSoundIcon.textContent = isMuted ? '🔇' : '🔊';
+        }
+        if (this.dom.adSoundLabel) {
+            this.dom.adSoundLabel.textContent = isMuted ? 'Вкл звук' : 'Звук Вкл';
         }
     }
 
     async loadAdManifest() {
         try {
-            const resp = await fetch('ads/manifest.json');
+            const resp = await fetch('ads/manifest.json?v=' + Date.now());
             if (resp.ok) {
                 const list = await resp.json();
                 if (Array.isArray(list) && list.length > 0) {
@@ -395,10 +421,8 @@ class CasinoApp {
         if (!this.dom.adModal || !this.dom.adVideo) return;
 
         const chosenVideo = this.getRandomAdVideo();
-        if (!this.dom.adVideo.src.endsWith(chosenVideo)) {
-            this.dom.adVideo.src = chosenVideo;
-            this.dom.adVideo.load();
-        }
+        const currentSrc = this.dom.adVideo.src || '';
+        const needsReload = !currentSrc.endsWith(chosenVideo);
 
         if (this.dom.adRewardTitle) {
             this.dom.adRewardTitle.textContent = `СМОТРИ РЕКЛАМУ И ЗАБЕРИ +$${amount.toLocaleString()}`;
@@ -414,19 +438,66 @@ class CasinoApp {
             this.dom.adClaimRewardBtn.classList.remove('ready');
             this.dom.adClaimRewardBtn.textContent = '⏳ ДОСМОТРИТЕ ДО КОНЦА';
         }
-        if (this.dom.adOverlay) {
-            this.dom.adOverlay.classList.add('hidden');
-        }
 
         this.dom.adModal.classList.remove('hidden');
-        this.dom.adVideo.currentTime = 0;
 
-        const playPromise = this.dom.adVideo.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(() => {
-                if (this.dom.adOverlay) this.dom.adOverlay.classList.remove('hidden');
-            });
+        const triggerAutoplay = () => {
+            const playPromise = this.dom.adVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    this.dom.adVideo.muted = true;
+                    this.updateAdSoundUI();
+                    this.dom.adVideo.play().catch(finalErr => {
+                        console.error('Video autoplay error:', finalErr);
+                        this.handleAdVideoError(chosenVideo);
+                    });
+                });
+            }
+        };
+
+        if (needsReload) {
+            this.dom.adVideo.src = chosenVideo;
+            this.dom.adVideo.muted = false;
+            this.updateAdSoundUI();
+            this.dom.adVideo.load();
+
+            if (this.dom.adVideo.readyState >= 2) {
+                try { this.dom.adVideo.currentTime = 0; } catch (e) {}
+                triggerAutoplay();
+            } else {
+                this.dom.adVideo.addEventListener('canplay', () => {
+                    try { this.dom.adVideo.currentTime = 0; } catch (e) {}
+                    triggerAutoplay();
+                }, { once: true });
+            }
+        } else {
+            try { this.dom.adVideo.currentTime = 0; } catch (e) {}
+            this.dom.adVideo.muted = false;
+            this.updateAdSoundUI();
+            triggerAutoplay();
         }
+    }
+
+    handleAdVideoError(failedVideo) {
+        if (!this.dom.adVideo) return;
+        const fallback = 'ads/musordrop.mp4';
+        const currentSrc = this.dom.adVideo.src || '';
+        if (!currentSrc.endsWith(fallback)) {
+            console.warn(`Ad video failed, switching to backup: ${fallback}`);
+            this.dom.adVideo.src = fallback;
+            this.dom.adVideo.muted = true;
+            this.updateAdSoundUI();
+            this.dom.adVideo.load();
+            this.dom.adVideo.play().catch(e => {
+                console.error('Fallback video play error:', e);
+                this.onAdCompleted();
+            });
+            return;
+        }
+        if (this.dom.adStatusText) {
+            this.dom.adStatusText.textContent = '✅ Спонсорский просмотр зачтен!';
+        }
+        this.onAdCompleted();
     }
 
     onAdCompleted() {

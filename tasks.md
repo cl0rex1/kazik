@@ -10,5 +10,7 @@
 - [x] Stage 8: Cyber Win Streak System with Progressive Multipliers <!-- id: stage-8 -->
 - [x] Stage 9: Bugfix - Share Modal & Canvas Screenshot Generation Recovery <!-- id: stage-9 -->
 - [x] Stage 10: Dynamic Random Ad Video Selection from ads/ Folder <!-- id: stage-10 -->
+- [x] Stage 11: Guaranteed Video Autoplay & Sound Toggle in ATM Ad Player <!-- id: stage-11 -->
+- [x] Stage 12: Fix floatup.mp4 Codec Profile & Bulletproof Ad Playback Fallback <!-- id: stage-12 -->
 
 

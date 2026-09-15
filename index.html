@@ -501,10 +501,10 @@
                 <h2 id="adRewardTitle">СМОТРИ РЕКЛАМУ И ЗАБЕРИ +$5,000</h2>
             </div>
             <div class="ad-video-container">
-                <video id="adVideoPlayer" src="ads/musordrop.mp4" playsinline preload="auto" class="ad-video-player"></video>
-                <div id="adVideoOverlay" class="ad-video-overlay hidden">
-                    <button id="adPlayPromptBtn" class="ad-play-prompt-btn">▶ НАЖМИ ДЛЯ ПРОСМОТРА</button>
-                </div>
+                <video id="adVideoPlayer" playsinline webkit-playsinline autoplay muted preload="auto" class="ad-video-player"></video>
+                <button id="adSoundToggleBtn" class="ad-sound-toggle-btn" title="Звук: Вкл/Выкл">
+                    <span id="adSoundIcon">🔊</span> <span id="adSoundLabel">Звук Вкл</span>
+                </button>
             </div>
             <div class="ad-controls-bar">
                 <div class="ad-status-row">
